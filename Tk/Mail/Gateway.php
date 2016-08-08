@@ -122,11 +122,12 @@ class Gateway
         $this->checkReferer($this->validReferers);
 
         // Dispatch Pre Send Event
-        $event = new \Tk\EventDispatcher\Event();
-        $event->set('gateway', $this);
-        $event->set('message', $message);
-        $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
-
+        if ($this->dispatcher) {
+            $event = new \Tk\EventDispatcher\Event();
+            $event->set('gateway', $this);
+            $event->set('message', $message);
+            $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
+        }
 
         if ($message->isHtml()) {
             $this->mail->msgHTML($message->getBody());
@@ -139,16 +140,22 @@ class Gateway
             $this->mail->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
         }
 
-        $message->addHeader('X-PHPMAILER', $this->params['system.name'] . ' - Ver: ' . $this->params['system.version']);
+        if (isset($this->params['system.name'])) {
+            $h = $this->params['system.name'];
+            if (isset($this->params['system.version'])) {
+                $h .= ' v:' . $this->params['system.version'];
+            }
+            $message->addHeader('X-Application', $h);
+        }
         if (isset($this->params['request']) && $this->params['request'] instanceof \Tk\Request) {
             $message->addHeader('X-Sender-IP', $this->params['request']->getIp());
             $message->addHeader('X-Referer', $this->params['request']->getReferer());
         }
         if (isset($this->params['session']) && $this->params['session'] instanceof \Tk\Session) {
-            $message->addHeader('X-SiteReferer', $this->params['session']->getData('site_referer'));
+            $message->addHeader('X-Site-Referer', $this->params['session']->getData('site_referer'));
         }
 
-        if ($this->params['debug']) {  // Send dev emails and headers of live emails if testing or debug
+        if (isset($this->params['debug']) && $this->params['debug']) {  // Send dev emails and headers of live emails if testing or debug
             $testEmail = 'debug@'.$_SERVER['HTTP_HOST'];
             if (isset($this->params['system.debug.email'])) {
                 $testEmail = $this->params['system.debug.email'];
@@ -156,19 +163,19 @@ class Gateway
             $this->mail->Subject = 'Debug: ' . $message->getSubject();
             //to
             $this->mail->addAddress($testEmail, 'Debug To');
-            $message->addHeader('X-TkDebug-To', Message::listToStr($message->getTo()));
+            $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
 
             //From
             $this->mail->setFrom($testEmail, 'Debug From');
-            $message->addHeader('X-TkDebug-From', current($message->getFrom()));
+            $message->addHeader('X-Debug-From', current($message->getFrom()));
 
             // CC
             if (count($message->getCc())) {
-                $message->addHeader('X-TkDebug-Cc', Message::listToStr($message->getCc()));
+                $message->addHeader('X-Debug-Cc', Message::listToStr($message->getCc()));
             }
             // BCC
             if (count($message->getBcc())) {
-                $message->addHeader('X-TkDebug-Bcc', Message::listToStr($message->getBcc()));
+                $message->addHeader('X-Debug-Bcc', Message::listToStr($message->getBcc()));
             }
         } else {        // Send live emails
             $this->mail->Subject = $message->getSubject();
@@ -200,10 +207,12 @@ class Gateway
         $this->lastSent = $this->mail->send();
 
         // Dispatch Post Send Event
-        $event = new \Tk\EventDispatcher\Event();
-        $event->set('gateway', $this);
-        $event->set('message', $message);
-        $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
+        if ($this->dispatcher) {
+            $event = new \Tk\EventDispatcher\Event();
+            $event->set('gateway', $this);
+            $event->set('message', $message);
+            $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
+        }
 
         $this->mail->clearAllRecipients();
         $this->mail->clearAttachments();
@@ -273,9 +282,12 @@ class Gateway
         if (substr(php_sapi_name(), 0, 3) == 'cli') {
             return;
         }
-        //$this->notify('preCheckReferer');
+        if (!isset($this->params['mail.checkReferer']) || !$this->params['mail.checkReferer']) {
+            return;
+        }
+
         if (count($referers) > 0) {
-            if ($_SERVER['HTTP_REFERER']) {
+            if (isset($_SERVER['HTTP_REFERER'])) {
                 $temp = explode('/', $_SERVER['HTTP_REFERER']);
                 $found = false;
                 while (list(, $stored_referer) = each($referers)) {
