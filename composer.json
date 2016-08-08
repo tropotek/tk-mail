@@ -1,0 +1,36 @@
+{
+    "name": "ttek/tk-mail",
+    "type": "library",
+    "description": "A mail lib using PHPMailer for the tk libs",
+    "keywords":  [
+        "tropotek",
+        "Table"
+    ],
+    "time": "2016-03-23",
+    "license": "MIT",
+    "version": "2.0.0",
+    "authors":  [
+         {
+            "name": "Michael Mifsud",
+            "email": "info@tropotek.com.au",
+            "homepage": "http://www.tropotek.com/"
+        }
+    ],
+    "autoload":  {
+        "psr-0":  {
+            "Tk": ""
+        }
+    },
+    "require":  {
+        "php": ">=5.3.0",
+        "ttek/tk-framework": "~2.0",
+        "ttek/tk-domtemplate": "~2.0",
+        "ttek/tk-http": "~2.0",
+        "phpmailer/phpmailer": "~5.2"
+    },
+    "extra":  {
+        "branch-alias":  {
+            "dev-master": "2.0.x-dev"
+        }
+    }
+}
