@@ -266,6 +266,25 @@ class Gateway
         return $this->mail;
     }
 
+    /**
+     * See if a string contains any suspicious/injection coding.
+     *
+     * @param string $str
+     * @throws \Tk\Mail\Exception
+     */
+    private function validateString($str)
+    {
+        if (!$str) { return; }
+        $badStrings = array("content-type:", "mime-version:", "multipart\/mixed", "content-transfer-encoding:", "bcc:", "cc:", "to:");
+        foreach ($badStrings as $badString) {
+            if (preg_match('/'.$badString.'/i', strtolower($str))) {
+                throw new Exception("'$badString' found. Suspected injection attempt - mail not being sent.");
+            }
+        }
+        if (preg_match("/(%0A|%0D|\\n+|\\r+)/i", $str) != 0) {
+            throw new Exception("newline found in '$str'. Suspected injection attempt - mail not being sent.");
+        }
+    }
 
     /**
      * check_referer() breaks up the environmental variable

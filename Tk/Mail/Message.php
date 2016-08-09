@@ -57,8 +57,29 @@ class Message
     protected $attachmentList = array();
 
 
-
-
+    /**
+     * Message constructor.
+     *
+     * @param string $body
+     * @param string $subject
+     * @param string $from
+     * @param string $to
+     */
+    public function __construct($body = '', $subject = '', $from = '', $to = '')
+    {
+        if ($body) {
+            $this->setBody($body);
+        }
+        if ($subject) {
+            $this->setSubject($subject);
+        }
+        if ($to) {
+            $this->addTo($to);
+        }
+        if ($from) {
+            $this->setFrom($from);
+        }
+    }
 
     /**
      *
