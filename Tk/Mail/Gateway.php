@@ -136,6 +136,11 @@ class Gateway
             $this->mail->Body = $message->getBody();
         }
 
+        $this->mail->CharSet = 'UTF-8';
+        if (isset($this->params['mail.encoding']) && $this->params['mail.encoding']) {
+            $this->mail->CharSet = $this->params['mail.encoding'];
+        }
+
         foreach ($message->getAttachmentList() as $obj) {
             $this->mail->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
         }
@@ -164,11 +169,9 @@ class Gateway
             //to
             $this->mail->addAddress($testEmail, 'Debug To');
             $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
-
             //From
             $this->mail->setFrom($testEmail, 'Debug From');
             $message->addHeader('X-Debug-From', current($message->getFrom()));
-
             // CC
             if (count($message->getCc())) {
                 $message->addHeader('X-Debug-Cc', Message::listToStr($message->getCc()));

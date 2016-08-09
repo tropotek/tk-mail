@@ -62,5 +62,8 @@ $cfg['mail.validReferers'] = '';
 //$cfg['system.name'] = '';
 //$cfg['system.version'] = '';
 
+// Change this to suite your message body encoding
+//$cfg['mail.encoding'] = 'UTF-8';
+
 
 
