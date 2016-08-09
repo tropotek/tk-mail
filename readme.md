@@ -91,15 +91,14 @@ $cfg['mail.validReferers'] = '';
  * Generally from the site config
  */
 // Set this if you want all email to go to this address during debug
-//$cfg['system.debug.email'] = '';
+//$cfg['system.debug.email'] = 'debug@'.$_SERVER['HTTP_HOST'];
 
 // \Tk\Request Used to set the X-Sender-IP, X-Referer headers
 //$cfg['request'] = '';
 // \Tk\Session Used to set the X-SiteReferer header
 //$cfg['session'] = '';
 
-// If true then no real email to addresses are used `system.debug.email` will be used if set
-// if not set root@{hostname} will be used
+// If true then all outgoing messages are sent to the `system.debug.email` address
 //$cfg['debug'] = false;
 
 // If set X-Application will be set to this

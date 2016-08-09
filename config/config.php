@@ -54,8 +54,8 @@ $cfg['mail.validReferers'] = '';
 // \Tk\Session Used to set the X-SiteReferer header
 //$cfg['session'] = '';
 
-// If true then no real email to addresses are used `system.debug.email` will be used if set
-// if not set root@{hostname} will be used
+// If true, all email recipients (to, bcc, cc, from) will be set to `system.debug.email` to avoid sending debug emails to live accounts.
+// The real recipient addresses will be moved to X-Debug-To,X-Debug-Cc, etc. headers
 //$cfg['debug'] = false;
 
 // If set X-Application will be set to this
