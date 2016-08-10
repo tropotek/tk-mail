@@ -153,8 +153,10 @@ class Gateway
             $message->addHeader('X-Application', $h);
         }
         if (isset($this->params['request']) && $this->params['request'] instanceof \Tk\Request) {
+            if ($this->params['request']->getIp())
             $message->addHeader('X-Sender-IP', $this->params['request']->getIp());
-            $message->addHeader('X-Referer', $this->params['request']->getReferer());
+            if ($this->params['request']->getReferer())
+                $message->addHeader('X-Referer', $this->params['request']->getReferer());
         }
         if (isset($this->params['session']) && $this->params['session'] instanceof \Tk\Session) {
             $message->addHeader('X-Site-Referer', $this->params['session']->getData('site_referer'));
