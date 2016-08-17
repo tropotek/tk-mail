@@ -65,7 +65,7 @@ class Message
      * @param string $from
      * @param string $to
      */
-    public function __construct($body = '', $subject = '', $from = '', $to = '')
+    public function __construct($body = '', $subject = '', $to = '', $from = '')
     {
         if ($body) {
             $this->setBody($body);
