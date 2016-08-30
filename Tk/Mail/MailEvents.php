@@ -13,7 +13,7 @@ final class MailEvents
 
 
     /**
-     * called prior to setting up the mail driver to send a message
+     * Called prior to setting up the mail driver to send a message
      *
      * @event \Tk\EventDispatcher\Event
      * @var string
@@ -23,7 +23,7 @@ final class MailEvents
 
 
     /**
-     * called after the mail driver has sent the message
+     * Called after the mail driver has sent the message
      *
      * @event \Tk\EventDispatcher\Event
      * @var string
