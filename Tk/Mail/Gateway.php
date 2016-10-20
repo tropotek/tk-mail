@@ -88,7 +88,9 @@ class Gateway
             }
             $this->validReferers = array_merge($this->validReferers, $refs);
         }
-        $this->validReferers[] = $_SERVER['HTTP_HOST'];
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $this->validReferers[] = array_merge($this->validReferers, array($_SERVER['HTTP_HOST']));
+        }
     }
 
     /**
