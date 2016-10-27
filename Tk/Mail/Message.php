@@ -162,12 +162,13 @@ class Message
     /**
      * Send this message to its recipients.
      *
-     * @retun bool
+     * @return bool
+     * @deprecated just use Gateway::send($message);
      */
-    public function send()
-    {
-        return Gateway::getInstance()->send($this);
-    }
+//    public function send()
+//    {
+//        return Gateway::getInstance()->send($this);
+//    }
 
 
     /**

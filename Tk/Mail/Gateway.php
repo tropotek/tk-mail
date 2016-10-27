@@ -12,11 +12,6 @@ class Gateway
 {
 
     /**
-     * @var Gateway
-     */
-    static $instance = null;
-
-    /**
      * @var array
      */
     protected $params = array();
@@ -91,19 +86,6 @@ class Gateway
         if (isset($_SERVER['HTTP_HOST'])) {
             $this->validReferers[] = array_merge($this->validReferers, array($_SERVER['HTTP_HOST']));
         }
-    }
-
-    /**
-     *
-     * @param array $params
-     * @return Gateway
-     */
-    static function getInstance($params = array())
-    {
-        if (self::$instance == null) {
-            self::$instance = new self($params);
-        }
-        return self::$instance;
     }
 
     /**
