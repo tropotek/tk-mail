@@ -439,10 +439,7 @@ class Message
             throw new Exception('Cannot read file: ' . $path);
         }
         if (!$type) {
-            $type = mime_content_type($path);
-            if (!$type) {
-                $type = 'application/octet-stream';
-            }
+            $type = \Tk\File::getMimeType($path);
         }
         if (!$name) {
             $name = basename($path);
