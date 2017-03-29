@@ -39,7 +39,7 @@ class Gateway
     protected $lastMessage = null;
 
     /**
-     * @var \Tk\EventDispatcher\EventDispatcher
+     * @var \Tk\Event\Dispatcher
      */
     protected $dispatcher = null;
 
@@ -107,7 +107,7 @@ class Gateway
 
         // Dispatch Pre Send Event
         if ($this->dispatcher) {
-            $event = new \Tk\EventDispatcher\Event();
+            $event = new \Tk\Event\Event();
             $event->set('gateway', $this);
             $event->set('message', $message);
             $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
@@ -197,7 +197,7 @@ class Gateway
 
         // Dispatch Post Send Event
         if ($this->dispatcher) {
-            $event = new \Tk\EventDispatcher\Event();
+            $event = new \Tk\Event\Event();
             $event->set('gateway', $this);
             $event->set('message', $message);
             $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
@@ -232,7 +232,7 @@ class Gateway
     }
 
     /**
-     * @return \Tk\EventDispatcher\EventDispatcher
+     * @return \Tk\Event\Dispatcher
      */
     public function getDispatcher()
     {
@@ -240,7 +240,7 @@ class Gateway
     }
 
     /**
-     * @param \Tk\EventDispatcher\EventDispatcher $dispatcher
+     * @param \Tk\Event\Dispatcher $dispatcher
      */
     public function setDispatcher($dispatcher)
     {
