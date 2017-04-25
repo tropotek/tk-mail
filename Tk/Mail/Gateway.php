@@ -135,13 +135,16 @@ class Gateway
             $this->mail->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
         }
 
-        if (isset($this->params['system.name'])) {
-            $h = $this->params['system.name'];
-            if (isset($this->params['system.version'])) {
-                $h .= ' v:' . $this->params['system.version'];
+        if (isset($this->params['system.info.project'])) {
+            $message->addHeader('X-Application', $this->params['system.info.project']);
+            if (isset($this->params['system.info.version'])) {
+                $message->addHeader('X-Application-Version', $this->params['system.info.version']);
             }
-            $message->addHeader('X-Application', $h);
+        } else {
+            $message->addHeader('X-Application', 'tk-lib-app');
+            $message->addHeader('X-Application-Version', '0.0.0');
         }
+        
         if (isset($this->params['request']) && $this->params['request'] instanceof \Tk\Request) {
             if ($this->params['request']->getIp())
             $message->addHeader('X-Sender-IP', $this->params['request']->getIp());
