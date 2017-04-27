@@ -43,6 +43,11 @@ class Gateway
      */
     protected $dispatcher = null;
 
+    /**
+     * @var string
+     */
+    protected $host = 'localhost';
+
 
     /**
      * Gateway constructor.
@@ -84,7 +89,8 @@ class Gateway
             $this->validReferers = array_merge($this->validReferers, $refs);
         }
         if (isset($_SERVER['HTTP_HOST'])) {
-            $this->validReferers[] = array_merge($this->validReferers, array($_SERVER['HTTP_HOST']));
+            $this->host = $_SERVER['HTTP_HOST'];
+            $this->validReferers[] = array_merge($this->validReferers, array($this->host));
         }
     }
 
@@ -147,7 +153,7 @@ class Gateway
         }
 
         if (isset($this->params['debug']) && $this->params['debug']) {  // Send dev emails and headers of live emails if testing or debug
-            $testEmail = 'debug@'.$_SERVER['HTTP_HOST'];
+            $testEmail = 'debug@'.$this->host;
             if (isset($this->params['system.debug.email'])) {
                 $testEmail = $this->params['system.debug.email'];
             }
@@ -173,7 +179,7 @@ class Gateway
             if ($f) {
                 $this->mail->setFrom($f[0], $f[1]);
             } else {
-                $e = 'root@' . $_SERVER['HTTP_HOST'];
+                $e = 'root@' . $this->host;
                 $this->mail->setFrom($e, 'System');
             }
 
