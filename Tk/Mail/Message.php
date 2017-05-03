@@ -83,112 +83,71 @@ class Message
     }
 
     /**
-     *
-     * @param string $email
-     * @param string $name
-     * @return string
+     * @param string $body
+     * @param string $subject
+     * @param string $to
+     * @param string $from
+     * 
+     * @return static
      */
-    static function joinEmail($email, $name = '')
+    public static function create($body = '', $subject = '', $to = '', $from = '')
     {
-        if (!$name) {
-            return $email;
-        }
-        return sprintf('%s <%s>', $name, $email);
+        $obj = new static($body, $subject, $to, $from);
+        return $obj;
     }
 
     /**
-     * split an email address from its parts to an array
-     * EG:
-     *   o 'email1@example.com'
-     *   o
+     * The message text body
      *
-     * @param string $address
-     * @return array Containing (email, name)
-     */
-    static function splitEmail($address)
-    {
-        $address = trim(strip_tags(strtolower($address)));
-        if (preg_match('/(.+) <(\S+)>/', $address, $regs)) {
-            return array($regs[1], $regs[0]);
-        } else if (preg_match('/((\S+)@(\S+))/', $address, $regs)) {
-            return array($address, $regs[2]);
-        }
-        return array($address, '');
-    }
-
-    /**
-     * take an email list fom above and return a string
-     *
-     * @param array $list
-     * @param bool $emailOnly
-     * @return string
-     */
-    static function listToStr($list, $emailOnly = false)
-    {
-        if (is_string($list)) $list = array($list => '');
-
-        $str = '';
-        foreach ($list as $e => $n) {
-            if (!filter_var($e, FILTER_VALIDATE_EMAIL) && !filter_var($n, FILTER_VALIDATE_EMAIL)) continue;
-            if (!filter_var($e, FILTER_VALIDATE_EMAIL) && filter_var($n, FILTER_VALIDATE_EMAIL)) {
-                $e = $n;
-                $n = '';
-            }
-            if ($emailOnly) {
-                $str .= self::joinEmail($e) . ',';
-            } else {
-                $str .= self::joinEmail($e, $n) . ',';
-            }
-
-        }
-        if ($str) $str = substr($str, 0, -1);
-        return $str;
-    }
-
-    /**
-     * Take a string and break it into a list
-     * EG:
-     *  'email1@test.org,email2@eample.com,...'
-     *  'email1@test.org;email2@eample.com,...'
-     *  'email1@test.org:email2@eample.com,...'
-     *  'name #1 <email1@test.org>,name #2 <wmail2@test.org>,...'
-     *
-     * returns a compatible email array for to,cc,bcc, from
-     *
-     * @param string $str
-     * @return array
-     */
-    static function strToList($str)
-    {
-        $str = str_replace(';', ',', $str);
-        $str = str_replace(':', ',', $str);
-        $arr = explode(',', $str);
-        $list = array();
-        foreach ($arr as $s) {
-            list($e, $n) = self::splitEmail($s);
-            $list[$e] = $n;
-        }
-        return $list;
-    }
-
-    /**
-     * reset the arrays:
-     *  o to
-     *  o cc
-     *  o bcc
-     * If full true include:
-     *  o from
-     *  o fileAttachments
-     *  o stringAttachments
-     *
+     * @param string $body
      * @return \Tk\Mail\Message
      */
-    public function reset()
+    public function setBody($body)
     {
-        $this->to = array();
-        $this->cc = array();
-        $this->bcc = array();
+        $this->body = $body;
         return $this;
+    }
+
+    /**
+     * Returns the message body.
+     *
+     * @return string
+     */
+    public function getBody()
+    {
+        return $this->body;
+    }
+
+    /**
+     * Returns the a parsed message body ready for sending.
+     *
+     * @return string
+     */
+    public function getParsed()
+    {
+        return $this->getBody();
+    }
+
+    /**
+     * Set the subject
+     *
+     * @param string $subject
+     * @return \Tk\Mail\Message
+     */
+    public function setSubject($subject)
+    {
+        $this->subject = $subject;
+        return $this;
+    }
+
+    /**
+     * Returns the message subject.
+     *
+     * @return string
+     */
+    public function getSubject()
+    {
+        return $this->subject;
     }
 
     /**
@@ -229,7 +188,6 @@ class Message
         $this->headerList = $array;
         return $this;
     }
-
 
     /**
      * set From
@@ -337,81 +295,24 @@ class Message
     }
 
     /**
-     * Add a recipient address to the message
-     * Only for internal usage
+     * reset the arrays:
+     *  o to
+     *  o cc
+     *  o bcc
+     * If full true include:
+     *  o from
+     *  o fileAttachments
+     *  o stringAttachments
      *
-     * @param string $address
-     * @param string $name
-     * @param $arr
      * @return \Tk\Mail\Message
      */
-    private function addAddress($address, $name, &$arr)
+    public function reset()
     {
-        if (!$address) return $this;
-        if (!$name) {
-            list($address, $name) = self::splitEmail($address);
-        }
-        if (!is_array($address)) {
-            if (strpos($address, ',') !== false) {
-                $address = self::strToList($address);
-            } else {
-                $address = array($address => $name);
-            }
-        }
-
-        foreach ($address as $email => $n) {
-            $email = trim(strip_tags(strtolower($email)));
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) continue;
-            $arr[$email] = trim(strip_tags($n));
-        }
+        $this->to = array();
+        $this->cc = array();
+        $this->bcc = array();
         return $this;
     }
-
-
-    /**
-     * Set the subject
-     *
-     * @param string $subject
-     * @return \Tk\Mail\Message
-     */
-    public function setSubject($subject)
-    {
-        $this->subject = $subject;
-        return $this;
-    }
-
-    /**
-     * Returns the message subject.
-     *
-     * @return string
-     */
-    public function getSubject()
-    {
-        return $this->subject;
-    }
-
-    /**
-     * The message text body
-     *
-     * @param string $body
-     * @return \Tk\Mail\Message
-     */
-    public function setBody($body)
-    {
-        $this->body = $body;
-        return $this;
-    }
-
-    /**
-     * Returns the message body.
-     *
-     * @return string
-     */
-    public function getBody()
-    {
-        return $this->body;
-    }
-
 
     /**
      * Is this message a html message
@@ -502,6 +403,126 @@ class Message
 
         $this->attachmentList[] = $obj;
         return $this;
+    }
+
+    /**
+     * Add a recipient address to the message
+     * Only for internal usage
+     *
+     * @param string $address
+     * @param string $name
+     * @param $arr
+     * @return \Tk\Mail\Message
+     */
+    private function addAddress($address, $name, &$arr)
+    {
+        if (!$address) return $this;
+        if (!$name) {
+            list($address, $name) = self::splitEmail($address);
+        }
+        if (!is_array($address)) {
+            if (strpos($address, ',') !== false) {
+                $address = self::strToList($address);
+            } else {
+                $address = array($address => $name);
+            }
+        }
+
+        foreach ($address as $email => $n) {
+            $email = trim(strip_tags(strtolower($email)));
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) continue;
+            $arr[$email] = trim(strip_tags($n));
+        }
+        return $this;
+    }
+
+    /**
+     *
+     * @param string $email
+     * @param string $name
+     * @return string
+     */
+    static function joinEmail($email, $name = '')
+    {
+        if (!$name) {
+            return $email;
+        }
+        return sprintf('%s <%s>', $name, $email);
+    }
+
+    /**
+     * split an email address from its parts to an array
+     * EG:
+     *   o 'email1@example.com'
+     *   o
+     *
+     * @param string $address
+     * @return array Containing (email, name)
+     */
+    static function splitEmail($address)
+    {
+        $address = trim(strip_tags(strtolower($address)));
+        if (preg_match('/(.+) <(\S+)>/', $address, $regs)) {
+            return array($regs[1], $regs[0]);
+        } else if (preg_match('/((\S+)@(\S+))/', $address, $regs)) {
+            return array($address, $regs[2]);
+        }
+        return array($address, '');
+    }
+
+    /**
+     * take an email list fom above and return a string
+     *
+     * @param array $list
+     * @param bool $emailOnly
+     * @return string
+     */
+    static function listToStr($list, $emailOnly = false)
+    {
+        if (is_string($list)) $list = array($list => '');
+
+        $str = '';
+        foreach ($list as $e => $n) {
+            if (!filter_var($e, FILTER_VALIDATE_EMAIL) && !filter_var($n, FILTER_VALIDATE_EMAIL)) continue;
+            if (!filter_var($e, FILTER_VALIDATE_EMAIL) && filter_var($n, FILTER_VALIDATE_EMAIL)) {
+                $e = $n;
+                $n = '';
+            }
+            if ($emailOnly) {
+                $str .= self::joinEmail($e) . ',';
+            } else {
+                $str .= self::joinEmail($e, $n) . ',';
+            }
+
+        }
+        if ($str) $str = substr($str, 0, -1);
+        return $str;
+    }
+
+    /**
+     * Take a string and break it into a list
+     * EG:
+     *  'email1@test.org,email2@eample.com,...'
+     *  'email1@test.org;email2@eample.com,...'
+     *  'email1@test.org:email2@eample.com,...'
+     *  'name #1 <email1@test.org>,name #2 <wmail2@test.org>,...'
+     *
+     * returns a compatible email array for to,cc,bcc, from
+     *
+     * @param string $str
+     * @return array
+     */
+    static function strToList($str)
+    {
+        $str = str_replace(';', ',', $str);
+        $str = str_replace(':', ',', $str);
+        $arr = explode(',', $str);
+        $list = array();
+        foreach ($arr as $s) {
+            list($e, $n) = self::splitEmail($s);
+            $list[$e] = $n;
+        }
+        return $list;
     }
 
     /**

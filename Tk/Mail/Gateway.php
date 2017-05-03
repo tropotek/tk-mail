@@ -107,7 +107,6 @@ class Gateway
      */
     public function send(Message $message)
     {
-
         if (!count($message->getTo())) {
             throw new Exception('No valid recipients found!');
         }
@@ -119,10 +118,10 @@ class Gateway
         $this->error = array();
 
         if ($message->isHtml()) {
-            $this->mailer->msgHTML($message->getBody());
-            $this->mailer->AltBody = strip_tags($message->getBody());
+            $this->mailer->msgHTML($message->getParsed());
+            $this->mailer->AltBody = strip_tags($message->getParsed());
         } else {
-            $this->mailer->Body = $message->getBody();
+            $this->mailer->Body = $message->getParsed();
         }
 
         $this->mailer->CharSet = 'UTF-8';
@@ -280,19 +279,19 @@ class Gateway
      * @param string $str
      * @throws \Tk\Mail\Exception
      */
-    private function validateString($str)
-    {
-        if (!$str) { return; }
-        $badStrings = array("content-type:", "mime-version:", "multipart\/mixed", "content-transfer-encoding:", "bcc:", "cc:", "to:");
-        foreach ($badStrings as $badString) {
-            if (preg_match('/'.$badString.'/i', strtolower($str))) {
-                throw new Exception("'$badString' found. Suspected injection attempt - mail not being sent.");
-            }
-        }
-        if (preg_match("/(%0A|%0D|\\n+|\\r+)/i", $str) != 0) {
-            throw new Exception("newline found in '$str'. Suspected injection attempt - mail not being sent.");
-        }
-    }
+//    private function validateString($str)
+//    {
+//        if (!$str) { return; }
+//        $badStrings = array("content-type:", "mime-version:", "multipart\/mixed", "content-transfer-encoding:", "bcc:", "cc:", "to:");
+//        foreach ($badStrings as $badString) {
+//            if (preg_match('/'.$badString.'/i', strtolower($str))) {
+//                throw new Exception("'$badString' found. Suspected injection attempt - mail not being sent.");
+//            }
+//        }
+//        if (preg_match("/(%0A|%0D|\\n+|\\r+)/i", $str) != 0) {
+//            throw new Exception("newline found in '$str'. Suspected injection attempt - mail not being sent.");
+//        }
+//    }
 
     /**
      * check_referer() breaks up the environmental variable
