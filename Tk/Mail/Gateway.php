@@ -24,13 +24,18 @@ class Gateway
     /**
      * @var \PHPMailer
      */
-    protected $mail = null;
+    protected $mailer = null;
 
     /**
      * The status of the last sent message
      * @var bool
      */
     protected $lastSent = null;
+
+    /**
+     * @var array
+     */
+    protected $error = array();
 
     /**
      * The status of the last sent message
@@ -57,26 +62,26 @@ class Gateway
     public function __construct($params = array())
     {
         $this->params = $params;
-        $this->mail = new \PHPMailer();
+        $this->mailer = new \PHPMailer();
 
         if (isset($this->params['mail.driver'])) {
             // Set the mail driver Default: mail();
             switch ($this->params['mail.driver']) {
                 case 'smtp':
-                    $this->mail->isSMTP();
-                    $this->mail->SMTPAuth = $this->params['mail.smtp.enableAuth'];
-                    $this->mail->SMTPKeepAlive = $this->params['mail.smtp.enableKeepAlive'];
-                    $this->mail->SMTPSecure = $this->params['mail.smtp.secure'];
-                    $this->mail->Host = $this->params['mail.smtp.host'];
-                    $this->mail->Port = $this->params['mail.smtp.port'];
-                    $this->mail->Username = $this->params['mail.smtp.username'];
-                    $this->mail->Password = $this->params['mail.smtp.password'];
+                    $this->mailer->isSMTP();
+                    $this->mailer->SMTPAuth = $this->params['mail.smtp.enableAuth'];
+                    $this->mailer->SMTPKeepAlive = $this->params['mail.smtp.enableKeepAlive'];
+                    $this->mailer->SMTPSecure = $this->params['mail.smtp.secure'];
+                    $this->mailer->Host = $this->params['mail.smtp.host'];
+                    $this->mailer->Port = $this->params['mail.smtp.port'];
+                    $this->mailer->Username = $this->params['mail.smtp.username'];
+                    $this->mailer->Password = $this->params['mail.smtp.password'];
                     break;
                 case 'sendmail':
-                    $this->mail->isSendmail();
+                    $this->mailer->isSendmail();
                     break;
                 case 'qmail':
-                    $this->mail->isQmail();
+                    $this->mailer->isQmail();
                     break;
             }
         }
@@ -111,28 +116,22 @@ class Gateway
         }
         $this->checkReferer($this->validReferers);
 
-        // Dispatch Pre Send Event
-        if ($this->dispatcher) {
-            $event = new \Tk\Event\Event();
-            $event->set('gateway', $this);
-            $event->set('message', $message);
-            $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
-        }
+        $this->error = array();
 
         if ($message->isHtml()) {
-            $this->mail->msgHTML($message->getBody());
-            $this->mail->AltBody = strip_tags($message->getBody());
+            $this->mailer->msgHTML($message->getBody());
+            $this->mailer->AltBody = strip_tags($message->getBody());
         } else {
-            $this->mail->Body = $message->getBody();
+            $this->mailer->Body = $message->getBody();
         }
 
-        $this->mail->CharSet = 'UTF-8';
+        $this->mailer->CharSet = 'UTF-8';
         if (isset($this->params['mail.encoding']) && $this->params['mail.encoding']) {
-            $this->mail->CharSet = $this->params['mail.encoding'];
+            $this->mailer->CharSet = $this->params['mail.encoding'];
         }
 
         foreach ($message->getAttachmentList() as $obj) {
-            $this->mail->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
+            $this->mailer->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
         }
 
         if (isset($this->params['system.info.project'])) {
@@ -160,12 +159,12 @@ class Gateway
             if (isset($this->params['system.debug.email'])) {
                 $testEmail = $this->params['system.debug.email'];
             }
-            $this->mail->Subject = 'Debug: ' . $message->getSubject();
+            $this->mailer->Subject = 'Debug: ' . $message->getSubject();
             //to
-            $this->mail->addAddress($testEmail, 'Debug To');
+            $this->mailer->addAddress($testEmail, 'Debug To');
             $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
             //From
-            $this->mail->setFrom($testEmail, 'Debug From');
+            $this->mailer->setFrom($testEmail, 'Debug From');
             $message->addHeader('X-Debug-From', current($message->getFrom()));
             // CC
             if (count($message->getCc())) {
@@ -176,52 +175,63 @@ class Gateway
                 $message->addHeader('X-Debug-Bcc', Message::listToStr($message->getBcc()));
             }
         } else {        // Send live emails
-            $this->mail->Subject = $message->getSubject();
+            $this->mailer->Subject = $message->getSubject();
 
             $f = $message->getFrom();
             if ($f) {
-                $this->mail->setFrom($f[0], $f[1]);
+                $this->mailer->setFrom($f[0], $f[1]);
             } else {
                 $e = 'root@' . $this->host;
-                $this->mail->setFrom($e, 'System');
+                $this->mailer->setFrom($e, 'System');
             }
 
             foreach ($message->getTo() as $e => $n) {
-                $this->mail->addAddress($e, $n);
+                $this->mailer->addAddress($e, $n);
             }
             foreach ($message->getCc() as $e => $n) {
-                $this->mail->addCC($e, $n);
+                $this->mailer->addCC($e, $n);
             }
             foreach ($message->getBcc() as $e => $n) {
-                $this->mail->addBCC($e, $n);
+                $this->mailer->addBCC($e, $n);
             }
         }
 
         foreach ($message->getHeadersList() as $h => $v) {
-            $this->mail->addCustomHeader($h, $v);
+            $this->mailer->addCustomHeader($h, $v);
         }
 
-        $this->lastMessage = $message;
-        $this->lastSent = $this->mail->send();
+        $event = new MailEvent($this, $message);
+        // Dispatch Pre Send Event
+        if ($this->dispatcher) {
+            $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
+        }
+
+        // Send Email
+        try {
+            $this->lastMessage = $message;
+            $this->lastSent = $this->mailer->send();
+        } catch (\Exception $e) {
+            $this->lastSent = false;
+            $this->error[] = $e->getMessage();
+            if ($this->params['debug']) {
+                vd($e->__toString());
+            }
+        }
 
         // Dispatch Post Send Event
         if ($this->dispatcher) {
-            $event = new \Tk\Event\Event();
-            $event->set('gateway', $this);
-            $event->set('message', $message);
             $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
         }
 
-        $this->mail->clearAllRecipients();
-        $this->mail->clearAttachments();
-        $this->mail->clearCustomHeaders();
-        $this->mail->clearReplyTos();
+        $this->mailer->clearAllRecipients();
+        $this->mailer->clearAttachments();
+        $this->mailer->clearCustomHeaders();
+        $this->mailer->clearReplyTos();
         return $this->lastSent;
     }
 
-
     /**
-     * Gte the last sent message status
+     * Get the last sent message status
      *
      * @return bool
      */
@@ -259,9 +269,9 @@ class Gateway
     /**
      * @return \PHPMailer
      */
-    public function getMail()
+    public function getMailer()
     {
-        return $this->mail;
+        return $this->mailer;
     }
 
     /**

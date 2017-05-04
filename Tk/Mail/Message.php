@@ -1,5 +1,6 @@
 <?php
 namespace Tk\Mail;
+use function PHPSTORM_META\type;
 
 /**
  * Class Message
@@ -106,26 +107,39 @@ class Message
      */
     static function splitEmail($address)
     {
-        $address = trim($address);
+        $address = trim(strip_tags(strtolower($address)));
         if (preg_match('/(.+) <(\S+)>/', $address, $regs)) {
-            return array(trim(strip_tags(strtolower($regs[1]))), $regs[0]);
+            return array($regs[1], $regs[0]);
         } else if (preg_match('/((\S+)@(\S+))/', $address, $regs)) {
-            return array(trim(strip_tags(strtolower($address))), '');
+            return array($address, $regs[2]);
         }
-        return array(trim(strip_tags(strtolower($address))), '');
+        return array($address, '');
     }
 
     /**
      * take an email list fom above and return a string
      *
      * @param array $list
+     * @param bool $emailOnly
      * @return string
      */
-    static function listToStr($list)
+    static function listToStr($list, $emailOnly = false)
     {
+        if (is_string($list)) $list = array($list => '');
+
         $str = '';
         foreach ($list as $e => $n) {
-            $str .= self::joinEmail($e, $n) . ',';
+            if (!filter_var($e, FILTER_VALIDATE_EMAIL) && !filter_var($n, FILTER_VALIDATE_EMAIL)) continue;
+            if (!filter_var($e, FILTER_VALIDATE_EMAIL) && filter_var($n, FILTER_VALIDATE_EMAIL)) {
+                $e = $n;
+                $n = '';
+            }
+            if ($emailOnly) {
+                $str .= self::joinEmail($e) . ',';
+            } else {
+                $str .= self::joinEmail($e, $n) . ',';
+            }
+
         }
         if ($str) $str = substr($str, 0, -1);
         return $str;
@@ -157,20 +171,6 @@ class Message
         return $list;
     }
 
-
-
-    /**
-     * Send this message to its recipients.
-     *
-     * @return bool
-     * @deprecated just use Gateway::send($message);
-     */
-//    public function send()
-//    {
-//        return Gateway::getInstance()->send($this);
-//    }
-
-
     /**
      * reset the arrays:
      *  o to
@@ -181,19 +181,13 @@ class Message
      *  o fileAttachments
      *  o stringAttachments
      *
-     * @param bool $full
      * @return \Tk\Mail\Message
      */
-    public function reset($full = false)
+    public function reset()
     {
         $this->to = array();
         $this->cc = array();
         $this->bcc = array();
-        if ($full) {
-            $this->from = array();
-            $this->attachmentList = array();
-            $this->headerList = array();
-        }
         return $this;
     }
 
@@ -224,6 +218,18 @@ class Message
         return $this->headerList;
     }
 
+    /**
+     * Replace the message header list
+     *
+     * @param $array
+     * @return $this
+     */
+    public function setHeaderList($array = array())
+    {
+        $this->headerList = $array;
+        return $this;
+    }
+
 
     /**
      * set From
@@ -234,7 +240,7 @@ class Message
      */
     public function setFrom($email, $name = '')
     {
-        $this->from = array(trim($email), trim($name));
+        $this->from = array(trim($email) => trim($name));
         return $this;
     }
 
@@ -348,9 +354,11 @@ class Message
         if (!is_array($address)) {
             if (strpos($address, ',') !== false) {
                 $address = self::strToList($address);
+            } else {
+                $address = array($address => $name);
             }
-            $address = array($address => $name);
         }
+
         foreach ($address as $email => $n) {
             $email = trim(strip_tags(strtolower($email)));
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) continue;
@@ -445,8 +453,8 @@ class Message
             $name = basename($path);
         }
 
-        $string = file_get_contents($path);
-        return $this->addStringAttachment($string, $name, $encoding, $type);
+        $data = file_get_contents($path);
+        return $this->addStringAttachment($data, $name, $encoding, $type);
     }
 
     /**
@@ -460,24 +468,38 @@ class Message
     }
 
     /**
+     * @param $array
+     * @return $this
+     */
+    public function setAttachmentList($array = array())
+    {
+        $this->attachmentList = $array;
+        return $this;
+    }
+
+    /**
      * Adds a string or binary attachment (non-filesystem) to the list.
      * This method can be used to attach ascii or binary data,
      * such as a BLOB record from a database.
      *
-     * @param string $string String attachment data.
+     * @param string $data Binary attachment data.
      * @param string $name Name of the attachment.
      * @param string $encoding File encoding
      * @param string $type File extension (MIME) type.
      * @return \Tk\Mail\Message
      */
-    public function addStringAttachment($string, $name, $encoding = 'base64', $type = 'application/octet-stream')
+    public function addStringAttachment($data, $name, $encoding = 'base64', $type = 'application/octet-stream')
     {
         $obj = new \stdClass();
-        //$this->validateString($string);
-        $obj->string = $string;
         $obj->name = $name;
         $obj->encoding = $encoding;
+        if ($type == 'application/octet-stream') {      // Try to locate the correct mime if not found
+            $mime = \Tk\File::getMimeType($name);
+            if ($mime) $type = $mime;
+        }
         $obj->type = $type;
+        $obj->string = $data;         // This is not encoded, should be raw attachment binary data
+
         $this->attachmentList[] = $obj;
         return $this;
     }
@@ -491,7 +513,7 @@ class Message
     {
         $str = '';
         $str .= "\nisHtml: " . ($this->isHtml() ? 'Yes' : 'No') . " \n";
-        $str .= 'Attatchments: ' . count($this->attachmentList) . "\n";
+        $str .= 'Attachments: ' . count($this->attachmentList) . "\n";
 
         /* email/name arrays */
         $str .= 'from: ' . current($this->getFrom()) . "\n";
