@@ -68,6 +68,23 @@ class CurlyMessage extends Message
         return $obj;
     }
 
+    public static function getParamList()
+    {
+        return array(
+            '{subject}',
+            '{siteUrl}',
+            '{requestUri}',
+            '{refererUri}',
+            '{remoteIp}',
+            '{userAgent}',
+            '{ccEmailList}',
+            '{bccEmailList}',
+            '{toEmailList}',
+            '{toEmail}',
+            '{fromEmail}'
+        );
+    }
+
     /**
      * Returns the a parsed message body ready for sending.
      *
@@ -83,12 +100,14 @@ class CurlyMessage extends Message
         $this->set('bccEmailList', implode(', ', $this->getBcc()));
         $this->set('toEmailList', implode(', ', $this->getTo()));
         $this->set('toEmail', implode(', ', $this->getTo()));
-        list($fe, $fn) = $this->getFrom();
-        $email = $fe;
-        if ($fn) {
-            $email = $fn . ' <' . $email . '>';
+        if ($this->getFrom()) {
+            list($fe, $fn) = $this->getFrom();
+            $email = $fe;
+            if ($fn) {
+                $email = $fn . ' <' . $email . '>';
+            }
+            $this->set('fromEmail', $email);
         }
-        $this->set('fromEmail', $email);
 
         $template = \Tk\CurlyTemplate::create($this->getBody());
         return $template->parse($this->getCollection()->all());
