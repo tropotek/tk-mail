@@ -3,21 +3,8 @@ namespace Tk\Mail;
 
 /**
  * This message accepts text templates and replaces {param} with the
- * corosponding value. Use Tk_Mail_TplMessage::get() and Tk_Mail_TplMessage::set()
- * to set the replaceable template variables.
+ * corresponding value.
  *
- * The default template param list:
- *  o {subject}
- *  o {siteUrl}
- *  o {requestUri}
- *  o {refererUri}
- *  o {remoteIp}
- *  o {userAgent}
- *  o {ccEmailList}
- *  o {bccEmailList}
- *  o {toEmailList}
- *  o {toEmail}
- *  o {fromEmail}
  *
  *
  */
@@ -25,6 +12,16 @@ class CurlyMessage extends Message
 {
     
     use \Tk\CollectionTrait;
+
+    /**
+     * @var callable
+     */
+    protected $onParse = null;
+
+    /**
+     * @var \Tk\CurlyTemplate
+     */
+    protected $template = null;
 
 
     /**
@@ -41,48 +38,42 @@ class CurlyMessage extends Message
     }
 
     /**
-     * create
+     * The message text body
      *
      * @param string $body
-     * @param string $subject
-     * @param string $to
-     * @param string $from
-     * @return static
+     * @return $this
      */
-    public static function createCurlyMessage($body = '', $subject = '', $to = '', $from = '')
+    public function setBody($body)
     {
-        $obj = self::create($body, $subject, $to, $from);
-        
-        $request = \Tk\Request::create();
-        $config = \Tk\Config::getInstance();
-
-        $obj->set('requestUri', $request->getUri()->toString());
-        if ($request->getReferer()) {
-            $obj->set('refererUri', $request->getReferer()->toString());
-        }
-        $obj->set('remoteIp', $request->getIp());
-        $obj->set('userAgent', $request->getUserAgent());
-        $obj->set('siteUrl', $config->getSiteUrl());
-        $obj->set('date', \Tk\Date::create()->format(\Tk\Date::FORMAT_LONG_DATETIME));
-        
-        return $obj;
+        $this->body = $body;
+        $this->template = null;
+        if ($body)
+            $this->template = \Tk\CurlyTemplate::create($body);
+        return $this;
     }
 
-    public static function getParamList()
+    /**
+     * Set a callback function to fire when the getParsed() method is called
+     *
+     * @param callable $onParse
+     * @return $this
+     */
+    public function setOnParse($onParse)
     {
-        return array(
-            '{subject}',
-            '{siteUrl}',
-            '{requestUri}',
-            '{refererUri}',
-            '{remoteIp}',
-            '{userAgent}',
-            '{ccEmailList}',
-            '{bccEmailList}',
-            '{toEmailList}',
-            '{toEmail}',
-            '{fromEmail}'
-        );
+        $this->onParse = $onParse;
+        return $this;
+    }
+
+    /**
+     * Gets the tCurlyTemplate object
+     *
+     * This will return null until the setBody($body) function is called with data
+     *
+     * @return \Tk\CurlyTemplate
+     */
+    public function getTemplate()
+    {
+        return $this->template;
     }
 
     /**
@@ -92,25 +83,37 @@ class CurlyMessage extends Message
      */
     public function getParsed()
     {
-        // generally this is called by the gateway before we sent the message
-        // so we should able to parse the message here
-        
+        if (!$this->template) return '';
+
         $this->set('subject', $this->getSubject());
-        $this->set('ccEmailList', implode(', ', $this->getCc()));
-        $this->set('bccEmailList', implode(', ', $this->getBcc()));
-        $this->set('toEmailList', implode(', ', $this->getTo()));
-        $this->set('toEmail', implode(', ', $this->getTo()));
-        if ($this->getFrom()) {
-            list($fe, $fn) = $this->getFrom();
-            $email = $fe;
-            if ($fn) {
-                $email = $fn . ' <' . $email . '>';
-            }
-            $this->set('fromEmail', $email);
+        $this->set('fromEmail', $this->getFrom());
+        $this->set('toEmail', self::listToStr($this->getTo()));
+        $this->set('toEmailList', self::listToStr($this->getTo()));
+        $this->set('ccEmailList', self::listToStr($this->getCc()));
+        $this->set('bccEmailList', self::listToStr($this->getBcc()));
+        $this->set('date', \Tk\Date::create()->format(\Tk\Date::FORMAT_LONG_DATETIME));
+
+        if (is_callable($this->onParse)) {
+            call_user_func_array($this->onParse, array($this));
         }
 
-        $template = \Tk\CurlyTemplate::create($this->getBody());
-        return $template->parse($this->getCollection()->all());
+        return $this->template->parse($this->getCollection()->all());
+    }
+
+
+    /**
+     * @return array
+     */
+    public static function getParamList()
+    {
+        return array(
+            'subject',
+            'fromEmail',
+            'toEmail',
+            'toEmailList',
+            'ccEmailList',
+            'bccEmailList'
+        );
     }
 
 }

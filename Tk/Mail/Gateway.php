@@ -107,108 +107,114 @@ class Gateway
      */
     public function send(Message $message)
     {
-        if (!count($message->getTo())) {
-            throw new Exception('No valid recipients found!');
-        }
-        if (!count($message->getFrom())) {
-            throw new Exception('No valid sender email found!');
-        }
-        $this->checkReferer($this->validReferers);
-
         $this->error = array();
-
-        if ($message->isHtml()) {
-            $this->mailer->msgHTML($message->getParsed());
-            $this->mailer->AltBody = strip_tags($message->getParsed());
-        } else {
-            $this->mailer->Body = $message->getParsed();
-        }
-
-        $this->mailer->CharSet = 'UTF-8';
-        if (isset($this->params['mail.encoding']) && $this->params['mail.encoding']) {
-            $this->mailer->CharSet = $this->params['mail.encoding'];
-        }
-
-        foreach ($message->getAttachmentList() as $obj) {
-            $this->mailer->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
-        }
-
-        if (isset($this->params['system.info.project'])) {
-            $message->addHeader('X-Application', $this->params['system.info.project']);
-            if (isset($this->params['system.info.version'])) {
-                $message->addHeader('X-Application-Version', $this->params['system.info.version']);
-            }
-        } else {
-            $message->addHeader('X-Application', 'tk-lib-app');
-            $message->addHeader('X-Application-Version', '0.0.0');
-        }
-        
-        if (isset($this->params['request']) && $this->params['request'] instanceof \Tk\Request) {
-            if ($this->params['request']->getIp())
-            $message->addHeader('X-Sender-IP', $this->params['request']->getIp());
-            if ($this->params['request']->getReferer())
-                $message->addHeader('X-Referer', $this->params['request']->getReferer());
-        }
-        if (isset($this->params['session']) && $this->params['session'] instanceof \Tk\Session) {
-            $message->addHeader('X-Site-Referer', $this->params['session']->getData('site_referer'));
-        }
-
-        if (isset($this->params['debug']) && $this->params['debug']) {  // Send dev emails and headers of live emails if testing or debug
-            $testEmail = 'debug@'.$this->host;
-            if (isset($this->params['system.debug.email'])) {
-                $testEmail = $this->params['system.debug.email'];
-            }
-            $this->mailer->Subject = 'Debug: ' . $message->getSubject();
-            //to
-            $this->mailer->addAddress($testEmail, 'Debug To');
-            $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
-            //From
-            $this->mailer->setFrom($testEmail, 'Debug From');
-            $message->addHeader('X-Debug-From', current($message->getFrom()));
-            // CC
-            if (count($message->getCc())) {
-                $message->addHeader('X-Debug-Cc', Message::listToStr($message->getCc()));
-            }
-            // BCC
-            if (count($message->getBcc())) {
-                $message->addHeader('X-Debug-Bcc', Message::listToStr($message->getBcc()));
-            }
-        } else {        // Send live emails
-            $this->mailer->Subject = $message->getSubject();
-
-            $f = $message->getFrom();
-            if ($f) {
-                $this->mailer->setFrom($f[0], $f[1]);
-            } else {
-                $e = 'root@' . $this->host;
-                $this->mailer->setFrom($e, 'System');
-            }
-
-            foreach ($message->getTo() as $e => $n) {
-                $this->mailer->addAddress($e, $n);
-            }
-            foreach ($message->getCc() as $e => $n) {
-                $this->mailer->addCC($e, $n);
-            }
-            foreach ($message->getBcc() as $e => $n) {
-                $this->mailer->addBCC($e, $n);
-            }
-        }
-
-        foreach ($message->getHeadersList() as $h => $v) {
-            $this->mailer->addCustomHeader($h, $v);
-        }
-
-        $event = new MailEvent($this, $message);
-        // Dispatch Pre Send Event
-        if ($this->dispatcher) {
-            $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
-        }
-
-        // Send Email
         try {
+            if (!count($message->getTo())) {
+                throw new Exception('No valid recipients found!');
+            }
+            if (!$message->getFrom()) {
+                throw new Exception('No valid sender email found!');
+            }
+            $this->checkReferer($this->validReferers);
+
+            if ($message->isHtml()) {
+                $this->mailer->msgHTML($message->getParsed());
+                $this->mailer->AltBody = strip_tags($message->getParsed());
+            } else {
+                $this->mailer->Body = $message->getParsed();
+            }
+
+            $this->mailer->CharSet = 'UTF-8';
+            if (isset($this->params['mail.encoding']) && $this->params['mail.encoding']) {
+                $this->mailer->CharSet = $this->params['mail.encoding'];
+            }
+
+            foreach ($message->getAttachmentList() as $obj) {
+                $this->mailer->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
+            }
+
+            if (isset($this->params['system.info.project'])) {
+                $message->addHeader('X-Application', $this->params['system.info.project']);
+                if (isset($this->params['system.info.version'])) {
+                    $message->addHeader('X-Application-Version', $this->params['system.info.version']);
+                }
+            } else {
+                $message->addHeader('X-Application', 'tk-lib-app');
+                $message->addHeader('X-Application-Version', '0.0.0');
+            }
+
+            if (isset($this->params['request']) && $this->params['request'] instanceof \Tk\Request) {
+                if ($this->params['request']->getIp())
+                $message->addHeader('X-Sender-IP', $this->params['request']->getIp());
+                if ($this->params['request']->getReferer())
+                    $message->addHeader('X-Referer', $this->params['request']->getReferer());
+            }
+            if (isset($this->params['session']) && $this->params['session'] instanceof \Tk\Session) {
+                $message->addHeader('X-Site-Referer', $this->params['session']->getData('site_referer'));
+            }
+
+            if (isset($this->params['debug']) && $this->params['debug']) {  // Send dev emails and headers of live emails if testing or debug
+                $testEmail = 'debug@'.$this->host;
+                if (isset($this->params['system.debug.email'])) {
+                    $testEmail = $this->params['system.debug.email'];
+                }
+                $this->mailer->Subject = 'Debug: ' . $message->getSubject();
+                //to
+                $this->mailer->addAddress($testEmail, 'Debug To');
+                $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
+                //From
+                $this->mailer->setFrom($testEmail, 'Debug From');
+                $message->addHeader('X-Debug-From', $message->getFrom());
+                // CC
+                if (count($message->getCc())) {
+                    $message->addHeader('X-Debug-Cc', Message::listToStr($message->getCc()));
+                }
+                // BCC
+                if (count($message->getBcc())) {
+                    $message->addHeader('X-Debug-Bcc', Message::listToStr($message->getBcc()));
+                }
+            } else {        // Send live emails
+                $this->mailer->Subject = $message->getSubject();
+
+                $email = $message->getFrom();
+                if (!$email) $email = 'root@' . $this->host;
+                list($e, $n) = Message::splitEmail($email);
+                $this->mailer->setFrom($e, $n);
+
+                foreach ($message->getTo() as $email) {
+                    list($e, $n) = Message::splitEmail($email);
+                    $this->mailer->addAddress($e, $n);
+                }
+                foreach ($message->getCc() as $email) {
+                    list($e, $n) = Message::splitEmail($email);
+                    $this->mailer->addCC($e, $n);
+                }
+                foreach ($message->getBcc() as $email) {
+                    list($e, $n) = Message::splitEmail($email);
+                    $this->mailer->addBCC($e, $n);
+                }
+            }
+
+            foreach ($message->getHeadersList() as $h => $v) {
+                $this->mailer->addCustomHeader($h, $v);
+            }
+
+            $event = new MailEvent($this, $message);
+            // Dispatch Pre Send Event
+            if ($this->dispatcher) {
+                $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
+            }
+
+            // Send Email
             $this->lastMessage = $message;
             $this->lastSent = $this->mailer->send();
+
+
+            // Dispatch Post Send Event
+            if ($this->dispatcher) {
+                $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
+            }
+
         } catch (\Exception $e) {
             $this->lastSent = false;
             $this->error[] = $e->getMessage();
@@ -217,16 +223,19 @@ class Gateway
             }
         }
 
-        // Dispatch Post Send Event
-        if ($this->dispatcher) {
-            $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
-        }
-
         $this->mailer->clearAllRecipients();
         $this->mailer->clearAttachments();
         $this->mailer->clearCustomHeaders();
         $this->mailer->clearReplyTos();
         return $this->lastSent;
+    }
+
+    /**
+     * @return array
+     */
+    public function getErrors()
+    {
+        return $this->error;
     }
 
     /**
