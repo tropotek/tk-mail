@@ -216,6 +216,7 @@ class Gateway
             }
 
         } catch (\Exception $e) {
+            // TODO: Discuss if this is the best way or should we catch exceptions further up the code tree, that may be a better option...
             $this->lastSent = false;
             $this->error[] = $e->getMessage();
             if ($this->params['debug']) {

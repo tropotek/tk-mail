@@ -11,6 +11,17 @@ namespace Tk\Mail;
  */
 class Message
 {
+    /**
+     * If set to true then emails can contain the users full name
+     *  o 	User Name <username@domain.edu.au>
+     *
+     * If set to false all long email addresses will be cleaned to only contain the email address
+     *  o username@domain.edu.au
+     *
+     * @var bool
+     */
+    public static $ENABLE_EXTENDED_ADDRESS = true;
+
 
     /**
      * @var array
@@ -303,7 +314,7 @@ class Message
         $list = self::strToList($email);
         foreach ($list as $e) {
             if (self::isValidEmail($e)) {
-                $arr[] = trim(strtolower($e));
+                $arr[] = trim($e);
             }
         }
         return $this;
@@ -418,7 +429,7 @@ class Message
      */
     public static function joinEmail($email, $name = '')
     {
-        if (!$name) {
+        if (!$email || !$name || !self::$ENABLE_EXTENDED_ADDRESS) {
             return $email;
         }
         return sprintf('%s <%s>', $name, $email);
