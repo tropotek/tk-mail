@@ -153,31 +153,26 @@ class Gateway
                 $message->addHeader('X-Site-Referer', $this->params['session']->getData('site_referer'));
             }
 
+            $this->mailer->Subject = $message->getSubject();
+
             if (isset($this->params['debug']) && $this->params['debug']) {  // Send dev emails and headers of live emails if testing or debug
                 $testEmail = 'debug@'.$this->host;
                 if (isset($this->params['system.debug.email'])) {
                     $testEmail = $this->params['system.debug.email'];
                 }
-                $this->mailer->Subject = 'Debug: ' . $message->getSubject();
-                //to
                 $this->mailer->addAddress($testEmail, 'Debug To');
                 $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
-                //From
                 $this->mailer->setFrom($testEmail, 'Debug From');
                 $message->addHeader('X-Debug-From', $message->getFrom());
-                // CC
                 if (count($message->getCc())) {
                     $message->addHeader('X-Debug-Cc', Message::listToStr($message->getCc()));
                 }
-                // BCC
                 if (count($message->getBcc())) {
                     $message->addHeader('X-Debug-Bcc', Message::listToStr($message->getBcc()));
                 }
             } else {        // Send live emails
-                $this->mailer->Subject = $message->getSubject();
-
                 $email = $message->getFrom();
-                if (!$email) $email = 'root@' . $this->host;
+                if (!$email) $email = 'noreply@' . $this->host;
                 list($e, $n) = Message::splitEmail($email);
                 $this->mailer->setFrom($e, $n);
 
@@ -209,19 +204,16 @@ class Gateway
             $this->lastMessage = $message;
             $this->lastSent = $this->mailer->send();
 
-
             // Dispatch Post Send Event
             if ($this->dispatcher) {
                 $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
             }
 
         } catch (\Exception $e) {
-            // TODO: Discuss if this is the best way or should we catch exceptions further up the code tree, that may be a better option...
+            // TODO: Discuss if this is the best way or should we catch exceptions externally, that may be a better option...???????
             $this->lastSent = false;
             $this->error[] = $e->getMessage();
-            if ($this->params['debug']) {
-                vd($e->__toString());
-            }
+            //throw $e;
         }
 
         $this->mailer->clearAllRecipients();
