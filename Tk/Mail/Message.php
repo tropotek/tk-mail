@@ -355,8 +355,6 @@ class Message
         return $this->html;
     }
 
-
-
     /**
      * take an email list fom above and return a string
      *
@@ -444,10 +442,6 @@ class Message
         list($e, $n) = self::splitEmail($email);
         return filter_var($e, FILTER_VALIDATE_EMAIL);
     }
-
-
-
-
 
     /**
      * Adds an attachment from a path on the filesystem.
