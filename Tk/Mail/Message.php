@@ -250,6 +250,14 @@ class Message
     }
 
     /**
+     * @return bool
+     */
+    public function hasRecipient()
+    {
+        return (count($this->getTo()) > 0);
+    }
+
+    /**
      * Add A Carbon Copy recipient
      *
      * @param string $email
