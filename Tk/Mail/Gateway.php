@@ -1,6 +1,8 @@
 <?php
 namespace Tk\Mail;
 
+use \PHPMailer\PHPMailer\PHPMailer;
+
 /**
  * Class Gateway
  *
@@ -22,7 +24,7 @@ class Gateway
     protected $validReferers = array();
 
     /**
-     * @var \PHPMailer
+     * @var PHPMailer
      */
     protected $mailer = null;
 
@@ -62,7 +64,7 @@ class Gateway
     public function __construct($params = array())
     {
         $this->params = $params;
-        $this->mailer = new \PHPMailer();
+        $this->mailer = new PHPMailer();
 
         if (isset($this->params['mail.driver'])) {
             // Set the mail driver Default: mail();
@@ -268,7 +270,7 @@ class Gateway
     }
 
     /**
-     * @return \PHPMailer
+     * @return PHPMailer
      */
     public function getMailer()
     {
