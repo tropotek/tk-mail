@@ -162,6 +162,7 @@ class Gateway
                 if (isset($this->params['system.debug.email'])) {
                     $testEmail = $this->params['system.debug.email'];
                 }
+
                 $this->mailer->addAddress($testEmail, 'Debug To');
                 $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
                 $this->mailer->setFrom($testEmail, 'Debug From');
@@ -204,7 +205,13 @@ class Gateway
 
             // Send Email
             $this->lastMessage = $message;
+
+            if (\Tk\Config::getInstance()->isDebug())
+                $this->mailer->SMTPDebug = 2;
+
             $this->lastSent = $this->mailer->send();
+            if (!$this->lastSent)
+                throw new \Tk\Mail\Exception($this->mailer->ErrorInfo);
 
             // Dispatch Post Send Event
             if ($this->dispatcher) {
@@ -212,10 +219,10 @@ class Gateway
             }
 
         } catch (\Exception $e) {
-            // TODO: Discuss if this is the best way or should we catch exceptions externally, that may be a better option...???????
+            // TODO: Discuss if this is the best way or should we catch exceptions externally, that may be a better option...???????s
             $this->lastSent = false;
             $this->error[] = $e->getMessage();
-            //throw $e;
+            throw $e;
         }
 
         $this->mailer->clearAllRecipients();
@@ -320,10 +327,16 @@ class Gateway
             if (isset($_SERVER['HTTP_REFERER'])) {
                 $temp = explode('/', $_SERVER['HTTP_REFERER']);
                 $found = false;
-                while (list(, $stored_referer) = each($referers)) {
-                    if (preg_match('/^' . $stored_referer . '$/i', $temp[2]))
+                foreach ($referers as $k => $stored_referer) {
+                    if (preg_match('/^' . $stored_referer . '$/i', $temp[2])) {
                         $found = true;
+                        break;
+                    }
                 }
+//                while (list(, $stored_referer) = each($referers)) {
+//                    if (preg_match('/^' . $stored_referer . '$/i', $temp[2]))
+//                        $found = true;
+//                }
                 if (!$found) {
                     throw new Exception("You are coming from an unauthorized domain. Illegal Referer.");
                 }
@@ -331,8 +344,7 @@ class Gateway
                 throw new Exception("Sorry, but I cannot figure out who sent you here. Your browser is not sending an HTTP_REFERER. This could be caused by a firewall or browser that removes the HTTP_REFERER from each HTTP request you submit.");
             }
         } else {
-            throw new Exception("There are no referers defined. All submissions will be denied.");
-        }
+            throw new Exception("There is no referer defined. All submissions will be denied.");        }
     }
 
 }
