@@ -1,5 +1,11 @@
 #CHANGELOG#
 
+Ver 2.0.8 [2018-01-15]:
+-------------------------------
+ - Minor Code Updates
+ - Near on finished the new status and message system, just needs a debug
+
+
 Ver 2.0.7 [2017-06-15]:
 -------------------------------
  - Minor Code Updates
