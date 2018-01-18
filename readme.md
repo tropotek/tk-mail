@@ -37,7 +37,7 @@ $message = new \Tk\Mail\Message();
 $message->addTo('info@tropotek.com');
 $message->setFrom('godar@tropotek.com.au');
 $message->setSubject('This is a test email');
-$message->setBody(\App\Factory::createMailTemplate('This is some message text'));
+$message->setBody(\App\Config::createMailTemplate('This is some message text'));
 
 $message->send();
 ```
