@@ -317,10 +317,12 @@ class Message
      */
     private function addAddress($email, &$arr)
     {
-        $list = self::strToList($email);
-        foreach ($list as $e) {
-            if (self::isValidEmail($e)) {
-                $arr[] = trim($e);
+        if ($email) {
+            $list = self::strToList($email);
+            foreach ($list as $e) {
+                if (self::isValidEmail($e)) {
+                    $arr[] = trim($e);
+                }
             }
         }
         return $this;
@@ -433,6 +435,7 @@ class Message
      */
     public static function joinEmail($email, $name = '')
     {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return '';
         if (!$email || !$name || !self::$ENABLE_EXTENDED_ADDRESS) {
             return $email;
         }
