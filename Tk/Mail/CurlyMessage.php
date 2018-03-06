@@ -80,6 +80,7 @@ class CurlyMessage extends Message
      * Returns the a parsed message body ready for sending.
      *
      * @return string
+     * @throws \Tk\Exception
      */
     public function getParsed()
     {
@@ -97,7 +98,9 @@ class CurlyMessage extends Message
             call_user_func_array($this->onParse, array($this));
         }
 
-        return $this->template->parse($this->getCollection()->all());
+        $str = $this->template->parse($this->getCollection()->all());
+
+        return $str;
     }
 
 
