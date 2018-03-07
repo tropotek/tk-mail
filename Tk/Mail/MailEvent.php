@@ -10,7 +10,7 @@ namespace Tk\Mail;
  * @license Copyright 2016 Michael Mifsud
  * @notes Adapted from Symfony
  */
-class MailEvent extends \Tk\Event\Iface
+class MailEvent extends \Tk\Event\Event
 {
     /**
      * @var \Tk\Mail\Gateway
@@ -31,7 +31,6 @@ class MailEvent extends \Tk\Event\Iface
      */
     public function __construct($gateway, $message)
     {
-        parent::__construct();
         $this->gateway = $gateway;
         $this->message = $message;
     }
@@ -45,7 +44,7 @@ class MailEvent extends \Tk\Event\Iface
     }
 
     /**
-     * @return \PHPMailer
+     * @return \PHPMailer\PHPMailer\PHPMailer
      */
     public function getMailer()
     {
