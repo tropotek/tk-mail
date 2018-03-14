@@ -22,7 +22,6 @@
         }
     },
     "require":  {
-        "php": ">=5.3.0",
         "ttek/tk-framework": "~2.0",
         "ttek/tk-domtemplate": "~2.0",
         "ttek/tk-http": "~2.0",
