@@ -105,7 +105,7 @@ class Gateway
      *
      * @param Message $message
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function send(Message $message)
     {
