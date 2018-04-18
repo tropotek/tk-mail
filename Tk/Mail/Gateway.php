@@ -158,15 +158,26 @@ class Gateway
             $this->mailer->Subject = $message->getSubject();
 
             if (isset($this->params['debug']) && $this->params['debug']) {  // Send dev emails and headers of live emails if testing or debug
+
+                $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
+                $message->addHeader('X-Debug-From', $message->getFrom());
+
+                // Set new debug recipient
                 $testEmail = 'debug@'.$this->host;
                 if (isset($this->params['system.debug.email'])) {
                     $testEmail = $this->params['system.debug.email'];
+                    if (is_array($this->params['system.debug.email'])) {
+                        foreach ($this->params['system.debug.email'] as $i => $em) {
+                            if ($i == 0) $testEmail = $em;
+                            $this->mailer->addAddress($em, 'Debug To');
+                        }
+                    } else {
+                        $testEmail = $this->params['system.debug.email'];
+                        $this->mailer->addAddress($testEmail, 'Debug To');
+                    }
                 }
-
-                $this->mailer->addAddress($testEmail, 'Debug To');
-                $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
                 $this->mailer->setFrom($testEmail, 'Debug From');
-                $message->addHeader('X-Debug-From', $message->getFrom());
+
                 if (count($message->getCc())) {
                     $message->addHeader('X-Debug-Cc', Message::listToStr($message->getCc()));
                 }
