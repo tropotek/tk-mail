@@ -168,8 +168,13 @@ class Gateway
                     $testEmail = $this->params['system.debug.email'];
                     if (is_array($this->params['system.debug.email'])) {
                         foreach ($this->params['system.debug.email'] as $i => $em) {
-                            if ($i == 0) $testEmail = $em;
-                            $this->mailer->addAddress($em, 'Debug To');
+                            if ($i == 0) {
+                                $testEmail = $em;
+                                $this->mailer->addAddress($em, 'Debug To');
+                            } else {
+                                $this->mailer->addCC($em, 'Debug To');
+                            }
+
                         }
                     } else {
                         $testEmail = $this->params['system.debug.email'];
