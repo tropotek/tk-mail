@@ -174,7 +174,6 @@ class Gateway
                             } else {
                                 $this->mailer->addCC($em, 'Debug To');
                             }
-
                         }
                     } else {
                         $testEmail = $this->params['system.debug.email'];
