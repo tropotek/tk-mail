@@ -119,6 +119,16 @@ class Gateway
             }
             $this->checkReferer($this->validReferers);
 
+
+
+            $event = new MailEvent($this, $message);
+            // Dispatch Pre Send Event
+            if ($this->dispatcher) {
+                $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
+            }
+
+
+
             if ($message->isHtml()) {
                 $this->mailer->msgHTML($message->getParsed());
                 $this->mailer->AltBody = strip_tags($message->getParsed());
@@ -210,12 +220,6 @@ class Gateway
 
             foreach ($message->getHeadersList() as $h => $v) {
                 $this->mailer->addCustomHeader($h, $v);
-            }
-
-            $event = new MailEvent($this, $message);
-            // Dispatch Pre Send Event
-            if ($this->dispatcher) {
-                $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
             }
 
             // Send Email
