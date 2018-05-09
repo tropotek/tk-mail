@@ -308,6 +308,17 @@ class Message
     }
 
     /**
+     * @return array
+     */
+    public function getRecipients()
+    {
+        $arr = $this->getTo();
+        $arr = array_merge($arr, $this->getCc());
+        $arr = array_merge($arr, $this->getBcc());
+        return $arr;
+    }
+
+    /**
      * Add a recipient address to the message
      * Only for internal usage
      *
