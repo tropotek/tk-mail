@@ -32,7 +32,7 @@ class CurlyMessage extends Message
      * @param string $to
      * @param string $from
      */
-    public function __construct($body = '', $subject = '', $to = '', $from = '')
+    public function __construct($body = '{content}', $subject = '', $to = '', $from = '')
     {
         parent::__construct($body, $subject, $to, $from);
     }
