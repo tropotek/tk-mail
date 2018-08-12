@@ -35,6 +35,7 @@ class CurlyMessage extends Message
     public function __construct($body = '{content}', $subject = '', $to = '', $from = '')
     {
         parent::__construct($body, $subject, $to, $from);
+        $this->set('content', '');
     }
 
     /**
