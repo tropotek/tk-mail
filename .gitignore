@@ -1,8 +1,7 @@
-# Created by .ignore support plugin (hsz.mobi)
-.htaccess
-.idea
+[Tt]humbs.db
+*.DS_Store
+
+vendor/
+composer.lock
+/.idea
 .directory
-*.swp
-*bak*
-_*
-*.iml
