@@ -63,6 +63,7 @@ class Gateway
      */
     public function __construct($params = array())
     {
+        // NOTICE: this could be the \Tk\Config object...
         $this->params = $params;
         $this->mailer = new PHPMailer();
 
@@ -145,25 +146,42 @@ class Gateway
                 $this->mailer->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
             }
 
+
+            $message->addHeader('X-Application', 'www.tropotek.com');
+            $message->addHeader('X-Application-Name', 'www.tropotek.com');
+            $message->addHeader('X-Application-Version', '0.0.1');
+
             if (isset($this->params['system.info.project'])) {
                 $message->addHeader('X-Application', $this->params['system.info.project']);
-                if (isset($this->params['system.info.version'])) {
-                    $message->addHeader('X-Application-Version', $this->params['system.info.version']);
-                }
-            } else {
-                $message->addHeader('X-Application', 'tk-lib-app');
-                $message->addHeader('X-Application-Version', '0.0.0');
+            }
+            if (!empty($this->params['site.title'])) {
+                $message->addHeader('X-Application-Title', $this->params['site.title']);
+            }
+            if (isset($this->params['system.info.version'])) {
+                $message->addHeader('X-Application-Version', $this->params['system.info.version']);
             }
 
-            if (isset($this->params['request']) && $this->params['request'] instanceof \Tk\Request) {
-                if ($this->params['request']->getIp())
-                $message->addHeader('X-Sender-IP', $this->params['request']->getIp());
-                if ($this->params['request']->getReferer())
-                    $message->addHeader('X-Referer', $this->params['request']->getReferer());
+            /** @var \Tk\Request $request */
+            $request = null;
+            if (!empty($this->params['request']) && $this->params['request'] instanceof \Tk\Request)
+                $request = $this->params['request'];
+            /** @var \Tk\Session $session */
+//            $session = null;
+//            if (!empty($this->params['session']) && $this->params['session'] instanceof \Tk\Session)
+//                $session = $this->params['session'];
+
+            if ($request) {
+                if ($request->getIp())
+                    $message->addHeader('X-Sender-IP', $request->getIp());
+                if ($request->getUri()->getHost())
+                    $message->addHeader('X-Host', $request->getUri()->getHost());
+                if ($request->getReferer())
+                    $message->addHeader('X-Referer', $request->getReferer());
             }
-            if (isset($this->params['session']) && $this->params['session'] instanceof \Tk\Session) {
-                $message->addHeader('X-Site-Referer', $this->params['session']->getData('site_referer'));
-            }
+//            if ($session) {
+//                if ($session->getData('site_referer'))
+//                    $message->addHeader('X-Site-Referer', $session->getData('site_referer'));
+//            }
 
             $this->mailer->Subject = $message->getSubject();
 
