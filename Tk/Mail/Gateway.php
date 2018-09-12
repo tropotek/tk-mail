@@ -155,7 +155,7 @@ class Gateway
                 $message->addHeader('X-Application', $this->params['system.info.project']);
             }
             if (!empty($this->params['site.title'])) {
-                $message->addHeader('X-Application-Title', $this->params['site.title']);
+                $message->addHeader('X-Application-Name', $this->params['site.title']);
             }
             if (isset($this->params['system.info.version'])) {
                 $message->addHeader('X-Application-Version', $this->params['system.info.version']);
@@ -165,10 +165,6 @@ class Gateway
             $request = null;
             if (!empty($this->params['request']) && $this->params['request'] instanceof \Tk\Request)
                 $request = $this->params['request'];
-            /** @var \Tk\Session $session */
-//            $session = null;
-//            if (!empty($this->params['session']) && $this->params['session'] instanceof \Tk\Session)
-//                $session = $this->params['session'];
 
             if ($request) {
                 if ($request->getIp())
@@ -176,12 +172,8 @@ class Gateway
                 if ($request->getUri()->getHost())
                     $message->addHeader('X-Host', $request->getUri()->getHost());
                 if ($request->getReferer())
-                    $message->addHeader('X-Referer', $request->getReferer());
+                    $message->addHeader('X-Referer', $request->getReferer()->getRelativePath());
             }
-//            if ($session) {
-//                if ($session->getData('site_referer'))
-//                    $message->addHeader('X-Site-Referer', $session->getData('site_referer'));
-//            }
 
             $this->mailer->Subject = $message->getSubject();
 
