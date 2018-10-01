@@ -39,6 +39,18 @@ class CurlyMessage extends Message
     }
 
     /**
+     * Set the content. this should be the contents of the email
+     * not to be confused with the message template.
+     * It can contain curly template vars also.
+     *
+     * @param string $tpl
+     */
+    public function setContent($tpl)
+    {
+        $this->set('content', $tpl);
+    }
+
+    /**
      * The message text body
      *
      * @param string $body
