@@ -1,7 +1,6 @@
 # tk-mail
 
 __Project:__ tk-mail  
-__Published:__ 8 Aug 2016   
 __Web:__ <https://github.com/tropotek/tk-mail/>  
 __Authors:__ Michael Mifsud <http://www.tropotek.com/>  
   
@@ -25,7 +24,7 @@ composer require ttek/tk-mail
 Or add the following to your composer.json file:
 
 ```json
-"ttek/tk-mail": "~2.0"
+"ttek/tk-mail": "~3.0"
 ```
 
 
