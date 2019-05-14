@@ -125,7 +125,7 @@ class Gateway
             $event = new MailEvent($this, $message);
             // Dispatch Pre Send Event
             if ($this->dispatcher) {
-                $this->dispatcher->dispatch($event, MailEvents::PRE_SEND);
+                $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
             }
 
 
@@ -244,7 +244,7 @@ class Gateway
 
             // Dispatch Post Send Event
             if ($this->dispatcher) {
-                $this->dispatcher->dispatch($event, MailEvents::POST_SEND);
+                $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
             }
 
         } catch (\Exception $e) {
