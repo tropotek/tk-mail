@@ -4,8 +4,6 @@ namespace Tk\Mail;
 use \PHPMailer\PHPMailer\PHPMailer;
 
 /**
- * Class Gateway
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @see http://www.tropotek.com/
  * @license Copyright 2016 Michael Mifsud
@@ -46,7 +44,7 @@ class Gateway
     protected $lastMessage = null;
 
     /**
-     * @var \Tk\Event\Dispatcher
+     * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
      */
     protected $dispatcher = null;
 
@@ -120,15 +118,11 @@ class Gateway
             }
             $this->checkReferer($this->validReferers);
 
-
-
             $event = new MailEvent($this, $message);
             // Dispatch Pre Send Event
             if ($this->dispatcher) {
                 $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
             }
-
-
 
             if ($message->isHtml()) {
                 $this->mailer->msgHTML($message->getParsed());
@@ -290,7 +284,7 @@ class Gateway
     }
 
     /**
-     * @return \Tk\Event\Dispatcher
+     * @return \Symfony\Component\EventDispatcher\EventDispatcherInterface
      */
     public function getDispatcher()
     {
@@ -298,7 +292,7 @@ class Gateway
     }
 
     /**
-     * @param \Tk\Event\Dispatcher $dispatcher
+     * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher
      */
     public function setDispatcher($dispatcher)
     {
