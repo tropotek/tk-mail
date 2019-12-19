@@ -495,7 +495,7 @@ class Message
     /**
      * Get the file attachments
      *
-     * @return array
+     * @return array|\stdClass[]
      */
     public function getAttachmentList()
     {
