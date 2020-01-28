@@ -1,6 +1,8 @@
 <?php
 namespace Tk\Mail;
 
+use Tk\Callback;
+
 /**
  * This message accepts text templates and replaces {param} with the
  * corresponding value.
@@ -14,7 +16,7 @@ class CurlyMessage extends Message
     use \Tk\CollectionTrait;
 
     /**
-     * @var callable
+     * @var Callback
      */
     protected $onParse = null;
 
@@ -66,14 +68,37 @@ class CurlyMessage extends Message
     }
 
     /**
+     * @return Callback
+     */
+    public function getOnParse()
+    {
+        return $this->onParse;
+    }
+
+    /**
+     * Set a callback function to fire when the getParsed() method is called
+     * EG: function ($curlyMessage) { }
+     *
+     * @param callable $callable
+     * @param int $priority
+     * @return $this
+     */
+    public function addOnParse($callable, $priority=Callback::DEFAULT_PRIORITY)
+    {
+        $this->getOnParse()->append($callable, $priority);
+        return $this;
+    }
+
+    /**
      * Set a callback function to fire when the getParsed() method is called
      *
      * @param callable $onParse
      * @return $this
+     * @deprecated Use addOnParse($callable, $priority);
      */
     public function setOnParse($onParse)
     {
-        $this->onParse = $onParse;
+        $this->addOnParse($onParse);
         return $this;
     }
 
