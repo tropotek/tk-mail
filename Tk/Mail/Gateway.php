@@ -161,8 +161,8 @@ class Gateway
                 $request = $this->params['request'];
 
             if ($request) {
-                if ($request->getIp())
-                    $message->addHeader('X-Sender-IP', $request->getIp());
+                if ($request->getClientIp())
+                    $message->addHeader('X-Sender-IP', $request->getClientIp());
                 if ($request->getTkUri()->getHost())
                     $message->addHeader('X-Host', $request->getTkUri()->getHost());
                 if ($request->getReferer())
