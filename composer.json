@@ -20,10 +20,5 @@
     "require":  {
         "ttek/tk-framework": "~3.0.0",
         "phpmailer/phpmailer": "~6.0"
-    },
-    "extra":  {
-        "branch-alias":  {
-            "dev-master": "3.0.x-dev"
-        }
     }
 }
