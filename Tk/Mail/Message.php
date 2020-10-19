@@ -344,10 +344,6 @@ class Message
      *  o to
      *  o cc
      *  o bcc
-     * If full true include:
-     *  o from
-     *  o fileAttachments
-     *  o stringAttachments
      *
      * @return $this
      */
