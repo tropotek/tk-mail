@@ -2,11 +2,8 @@
     "name": "ttek/tk-mail",
     "type": "library",
     "description": "A mail lib using PHPMailer for the tk libs",
-    "keywords":  [
-        "tropotek",
-        "Table"
-    ],
-    "time": "2020-11-23",
+    "keywords":  ["tropotek", "Table"],
+    "time": "2019-04-09",
     "license": "MIT",
     "authors":  [
          {
