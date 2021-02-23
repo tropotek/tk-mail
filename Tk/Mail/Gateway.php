@@ -229,8 +229,9 @@ class Gateway
             // Send Email
             $this->lastMessage = $message;
 
-            if (\Tk\Config::getInstance()->isDebug())
-                $this->mailer->SMTPDebug = 2;
+            // Note: can interfear with output buffer contents in AJAX calls, so enable when needed only
+//            if (\Tk\Config::getInstance()->isDebug())
+//                $this->mailer->SMTPDebug = 2;
 
             $this->lastSent = $this->mailer->send();
             if (!$this->lastSent)
