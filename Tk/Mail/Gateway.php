@@ -1,6 +1,7 @@
 <?php
 namespace Tk\Mail;
 
+use Bs\Config;
 use \PHPMailer\PHPMailer\PHPMailer;
 
 /**
@@ -194,6 +195,11 @@ class Gateway
                         $this->mailer->addAddress($testEmail, 'Debug To');
                     }
                 }
+                if (class_exists('\Bs\Config') && Config::getInstance()->getAuthUser()) {
+                    $testEmail = Config::getInstance()->getAuthUser()->getEmail();
+                    $this->mailer->addAddress($testEmail, Config::getInstance()->getAuthUser()->getName());
+                }
+
                 $this->mailer->setFrom($testEmail, 'Debug From');
 
                 if (count($message->getCc())) {
