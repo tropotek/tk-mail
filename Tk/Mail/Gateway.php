@@ -195,7 +195,8 @@ class Gateway
                         $this->mailer->addAddress($testEmail, 'Debug To');
                     }
                 }
-                if (class_exists('\Bs\Config') && Config::getInstance()->getAuthUser()) {
+
+                if ($this->params['system.debug.email.authUser'] && class_exists('\Bs\Config') && Config::getInstance()->getAuthUser()) {
                     $testEmail = Config::getInstance()->getAuthUser()->getEmail();
                     $this->mailer->addAddress($testEmail, Config::getInstance()->getAuthUser()->getName());
                 }
