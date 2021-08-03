@@ -41,6 +41,17 @@ class CurlyMessage extends Message
     }
 
     /**
+     *  Do a deep clone to avoid template issues
+     */
+    function __clone()
+    {
+        if ($this->template)
+            $this->template = clone $this->template;
+        if ($this->collection)
+            $this->collection = clone $this->collection;
+    }
+
+    /**
      * Set the content. this should be the contents of the email
      * not to be confused with the message template.
      * It can contain curly template vars also.
