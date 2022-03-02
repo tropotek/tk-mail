@@ -1,7 +1,7 @@
 # tk-mail
 
 __Project:__ tk-mail  
-__Web:__ <https://github.com/tropotek/tk-mail/>  
+__Project:__ [uom/tk-map](http://packagist.org/packages/uom/tk-map)
 __Authors:__ Michael Mifsud <http://www.tropotek.com/>  
   
 A mail lib for the Tk lib. Uses PHPMailer for the email driver.
@@ -14,17 +14,17 @@ A mail lib for the Tk lib. Uses PHPMailer for the email driver.
 
 ## Installation
 
-Available on Packagist ([ttek/tk-mail](http://packagist.org/packages/ttek/tk-mail))
+Available on Packagist ([uom/tk-mail](http://packagist.org/packages/uom/tk-mail))
 and installable via [Composer](http://getcomposer.org/).
 
 ```bash
-composer require ttek/tk-mail
+composer require uom/tk-mail
 ```
 
 Or add the following to your composer.json file:
 
 ```json
-"ttek/tk-mail": "~3.0"
+"uom/tk-mail": "~3.0"
 ```
 
 
