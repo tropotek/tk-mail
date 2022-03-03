@@ -1,31 +1,31 @@
 {
-    "name": "uom/tk-mail",
-    "type": "library",
-    "description": "A mail lib using PHPMailer for the tk libs",
-    "keywords":  [
-        "tropotek",
-        "Table"
-    ],
-    "time": "2022-03-03",
-    "license": "MIT",
-    "authors":  [
-         {
-            "name": "Michael Mifsud",
-            "homepage": "http://www.tropotek.com/"
-        }
-    ],
-    "autoload":  {
-        "psr-0":  {
-            "Tk": ""
-        }
-    },
-    "require":  {
-        "uom/tk-framework": "~3.2.0",
-        "phpmailer/phpmailer": "~6.0"
-    },
-    "extra":  {
-        "branch-alias":  {
-            "dev-master": "3.2.x-dev"
-        }
+  "name": "uom/tk-mail",
+  "type": "library",
+  "description": "A mail lib using PHPMailer for the tk libs",
+  "keywords": [
+    "tropotek",
+    "Table"
+  ],
+  "time": "2019-04-09",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Michael Mifsud",
+      "homepage": "http://www.tropotek.com/"
     }
+  ],
+  "autoload": {
+    "psr-0": {
+      "Tk": ""
+    }
+  },
+  "require": {
+    "uom/tk-framework": "~3.2.0",
+    "phpmailer/phpmailer": "~6.0"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "3.2.x-dev"
+    }
+  }
 }
