@@ -24,7 +24,7 @@ composer require uom/tk-mail
 Or add the following to your composer.json file:
 
 ```json
-"uom/tk-mail": "~3.0"
+"uom/tk-mail": "~3.2"
 ```
 
 
