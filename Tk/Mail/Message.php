@@ -2,173 +2,89 @@
 namespace Tk\Mail;
 
 
+use Tk\FileUtil;
+
 /**
- * @author Michael Mifsud <info@tropotek.com>
- * @see http://www.tropotek.com/
- * @license Copyright 2016 Michael Mifsud
+ * @author Tropotek <info@tropotek.com>
  */
 class Message
 {
+
     /**
      * If set to true then emails can contain the users full name
      *  o 	User Name <username@domain.edu.au>
      *
      * If set to false all long email addresses will be cleaned to only contain the email address
      *  o username@domain.edu.au
-     *
-     * @var bool
      */
-    public static $ENABLE_EXTENDED_ADDRESS = true;
+    public static bool $ENABLE_EXTENDED_ADDRESS = true;
 
 
-    /**
-     * @var array
-     */
-    protected $to = array();
+    protected array $to = [];
 
-    /**
-     * @var array
-     */
-    protected $cc = array();
+    protected array $cc = [];
 
-    /**
-     * @var array
-     */
-    protected $bcc = array();
+    protected array $bcc = [];
 
-    /**
-     * @var string
-     */
-    protected $from = '';
+    protected string $from = '';
 
-    /**
-     * @var string
-     */
-    protected $subject = '{No Subject}';
+    protected string $subject = '{No Subject}';
 
-    /**
-     * @var string
-     */
-    protected $body = '';
+    protected string $body = '';
 
-    /**
-     * @var bool
-     */
-    protected $html = true;
+    protected bool $html = true;
 
-    /**
-     * @var array
-     */
-    protected $headerList = array();
+    protected array $headerList = [];
 
-    /**
-     * @var array
-     */
-    protected $attachmentList = array();
+    protected array $attachmentList = [];
 
 
-    /**
-     * Message constructor.
-     *
-     * @param string $body
-     * @param string $subject
-     * @param string $from
-     * @param string $to
-     */
-    public function __construct($body = '', $subject = '', $to = '', $from = '')
+    public function __construct(string $body = '', string $subject = '', string $to = '', string $from = '')
     {
-        if ($body) {
-            $this->setBody($body);
-        }
-        if ($subject) {
-            $this->setSubject($subject);
-        }
-        if ($to) {
-            $this->addTo($to);
-        }
-        if ($from) {
-            $this->setFrom($from);
-        }
+        $this->setBody($body);
+        $this->setSubject($subject);
+        $this->addTo($to);
+        $this->setFrom($from);
     }
 
-    /**
-     * @param string $body
-     * @param string $subject
-     * @param string $to
-     * @param string $from
-     * 
-     * @return static
-     */
-    public static function create($body = '', $subject = '', $to = '', $from = '')
+    public static function create(string $body = '', string $subject = '', string $to = '', string $from = ''): static
     {
-        $obj = new static($body, $subject, $to, $from);
-        return $obj;
+        return new static($body, $subject, $to, $from);
     }
 
-    /**
-     * The message text body
-     *
-     * @param string $body
-     * @return $this
-     */
-    public function setBody($body)
+    public function setBody(string $body): static
     {
         $this->body = $body;
         return $this;
     }
 
-    /**
-     * Returns the message body.
-     *
-     * @return string
-     */
-    public function getBody()
+    public function getBody(): string
     {
         return $this->body;
     }
 
     /**
-     * Returns the a parsed message body ready for sending.
-     *
-     * @return string
+     * Returns the parsed message body ready for sending.
      */
-    public function getParsed()
+    public function getParsed(): string
     {
         return $this->getBody();
     }
 
-    /**
-     * Set the subject
-     *
-     * @param string $subject
-     * @return $this
-     */
-    public function setSubject($subject)
+    public function setSubject(string $subject): static
     {
         $this->subject = $subject;
         return $this;
     }
 
-    /**
-     * Returns the message subject.
-     *
-     * @return string
-     */
-    public function getSubject()
+    public function getSubject(): string
     {
         return $this->subject;
     }
 
-    /**
-     * Adds a custom header.
-     *
-     * @param string $header
-     * @param string $value
-     * @return Message
-     */
-    public function addHeader($header, $value = '')
+    public function addHeader(string $header, string $value = ''): static
     {
-        if (strstr($header, ':') !== false) {
+        if (str_contains($header, ':')) {
             $this->headerList[] = explode(':', $header, 2);
         } else {
             $this->headerList[$header] = $value;
@@ -176,157 +92,73 @@ class Message
         return $this;
     }
 
-    /**
-     * Get a list of
-     *
-     * @return array
-     */
-    public function getHeadersList()
+    public function getHeadersList(): array
     {
         return $this->headerList;
     }
 
-    /**
-     * Replace the message header list
-     *
-     * @param $array
-     * @return $this
-     */
-    public function setHeaderList($array = array())
+    public function setHeaderList(array $array = []): static
     {
         $this->headerList = $array;
         return $this;
     }
 
-    /**
-     * Set from email address
-     *
-     * @param string $email
-     * @return $this
-     */
-    public function setFrom($email)
+    public function setFrom(string $email): static
     {
         $this->from = trim($email);
         return $this;
     }
 
-    /**
-     * Return the from address
-     *
-     *
-     * @return string
-     */
-    public function getFrom()
+    public function getFrom(): string
     {
         return $this->from;
     }
 
-    /**
-     * Add a recipient address to the message
-     *
-     * @param string $email
-     * @return $this
-     */
-    public function addTo($email)
+    public function addTo(string $email): static
     {
         return $this->addAddress($email, $this->to);
     }
 
-    /**
-     * Get the to recipient list
-     *
-     * array(
-     *   'email1',
-     *   'User Name <email2>'
-     * );
-     *
-     * @return array
-     */
-    public function getTo()
+    public function getTo(): array
     {
         return $this->to;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasRecipient()
+    public function hasRecipient(): bool
     {
         return (count($this->getTo()) > 0);
     }
 
-    /**
-     * Add A Carbon Copy recipient
-     *
-     * @param string $email
-     * @return $this
-     */
-    public function addCc($email)
+    public function addCc(string $email): static
     {
         return $this->addAddress($email, $this->cc);
     }
 
-    /**
-     * Get the Cc recipient list
-     *
-     * array(
-     *   'email1',
-     *   'User Name <email2>'
-     * );
-     *
-     * @return array
-     */
-    public function getCc()
+    public function getCc(): array
     {
         return $this->cc;
     }
 
-    /**
-     * Add a Blind Carbon Copy recipient
-     *
-     * @param string $email
-     * @return $this
-     */
-    public function addBcc($email)
+    public function addBcc(string $email): static
     {
         return $this->addAddress($email, $this->bcc);
     }
 
-    /**
-     * Get the bcc recipient list
-     *
-     * array(
-     *   'email1',
-     *   'User Name <email2>'
-     * );
-     *
-     * @return array
-     */
-    public function getBcc()
+    public function getBcc(): array
     {
         return $this->bcc;
     }
 
-    /**
-     * @return array
-     */
-    public function getRecipients()
+    public function getAllRecipients(): array
     {
-        $arr = $this->getTo();
-        $arr = array_merge($arr, $this->getCc());
-        $arr = array_merge($arr, $this->getBcc());
-        return $arr;
+        return $this->getTo() + $this->getCc() + $this->getBcc();
     }
 
     /**
      * Add a recipient address to the message
      * Only for internal usage
-     *
-     * @param string $email
-     * @param array $arr Reference to the array to save the address to
-     * @return $this
      */
-    private function addAddress($email, &$arr)
+    private function addAddress(string $email, array &$arr): static
     {
         if ($email) {
             $list = self::strToList($email);
@@ -349,39 +181,33 @@ class Message
      *  o fileAttachments
      *  o stringAttachments
      *
-     * @return $this
      */
-    public function reset()
+    public function reset(): static
     {
-        $this->to = array();
-        $this->cc = array();
-        $this->bcc = array();
+        $this->to = [];
+        $this->cc = [];
+        $this->bcc = [];
         return $this;
     }
 
     /**
      * Is this message a html message
-     * If no parameter given nothing is set but its value returned.
-     *
-     * @param bool $b (Optional)If not set acts as a getter(accessor) method
-     * @return bool
      */
-    public function isHtml($b = null)
+    public function setHtml(bool $b = true): static
     {
-        if ($b !== null) {
-            $this->html = $b;
-        }
+        $this->html = $b;
+        return $this;
+    }
+
+    public function isHtml(): bool
+    {
         return $this->html;
     }
 
     /**
-     * take an email list fom above and return a string
-     *
-     * @param string|array $list
-     * @param string $separator
-     * @return string
+     * take an email list and return a string
      */
-    public static function listToStr($list, $separator = ',')
+    public static function listToStr(array|string $list, string $separator = ','): string
     {
         if (is_string($list)) $list = self::strToList($list);
         $str = '';
@@ -389,8 +215,7 @@ class Message
             if (!self::isValidEmail($email)) continue;
             $str .= $email . $separator;
         }
-        $str = rtrim($str, $separator);
-        return $str;
+        return rtrim($str, $separator);
     }
 
     /**
@@ -402,13 +227,9 @@ class Message
      *  'name #1 <email1@test.org>,name #2 <wmail2@test.org>,...'
      *
      * returns a compatible email array for to,cc,bcc, from
-     *
-     * @param string $str
-     * @param string $separator
-     * @return array
      * @note There may be a bug here now that we know that email usernames can contain any ascii character
      */
-    public static function strToList($str, $separator = ',')
+    public static function strToList(string $str, string $separator = ','): array
     {
         $str = str_replace(';', ',', $str);
         $str = str_replace(':', ',', $str);
@@ -422,12 +243,9 @@ class Message
      * EG:
      *   o "username@domain.com" = array('username@domain.com', 'username')
      *   o "User Name <username@domain.com>" = array('username@domain.com', 'User Name')
-     *   O All unknowns return array('', 'original string value...')
-     *
-     * @param string $email
-     * @return array Containing (email, name)
+     *   O All unknowns return array('{$email}', '')
      */
-    public static function splitEmail($email)
+    public static function splitEmail(string $email): array
     {
         $email = trim($email);
         if (preg_match('/(.+) <(\S+)>/', $email, $regs)) {
@@ -435,16 +253,10 @@ class Message
         } else if (preg_match('/((\S+)@(\S+))/', $email, $regs)) {
             return array(strtolower($email), $regs[2]);
         }
-        return array('', $email);
+        return array($email, '');
     }
 
-    /**
-     *
-     * @param string $email
-     * @param string $name
-     * @return string
-     */
-    public static function joinEmail($email, $name = '')
+    public static function joinEmail(string $email, string $name = ''): string
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return '';
         if (!$email || !$name || !self::$ENABLE_EXTENDED_ADDRESS) {
@@ -453,11 +265,7 @@ class Message
         return sprintf('%s <%s>', $name, $email);
     }
 
-    /**
-     * @param string $email
-     * @return boolean
-     */
-    public static function isValidEmail($email)
+    public static function isValidEmail(string $email): bool
     {
         list($e, $n) = self::splitEmail($email);
         return filter_var($e, FILTER_VALIDATE_EMAIL);
@@ -467,46 +275,32 @@ class Message
      * Adds an attachment from a path on the filesystem.
      * Returns false if the file could not be found
      * or accessed.
-     *
-     * @param string $path Path to the file.
-     * @param string $name if null file basename used
-     * @param string $type File extension (MIME) type. If null tries to auto detect type.
-     * @return $this
-     * @throws \Tk\Mail\Exception
      */
-    public function addAttachment($path, $name = '', $type = 'application/octet-stream')
+    public function addAttachment(string $path, string $name = '', string $type = 'application/octet-stream'): static
     {
         $encoding = 'base64';
-
         if (!is_readable($path)) {
             throw new Exception('Cannot read file: ' . $path);
         }
         if (!$type) {
-            $type = \Tk\File::getMimeType($path);
+            $type = FileUtil::getMimeType($path);
         }
         if (!$name) {
             $name = basename($path);
         }
-
         $data = file_get_contents($path);
         return $this->addStringAttachment($data, $name, $encoding, $type);
     }
 
     /**
      * Get the file attachments
-     *
-     * @return array|\stdClass[]
      */
-    public function getAttachmentList()
+    public function getAttachmentList(): array
     {
         return $this->attachmentList;
     }
 
-    /**
-     * @param $array
-     * @return $this
-     */
-    public function setAttachmentList($array = array())
+    public function setAttachmentList(array $array = []): static
     {
         $this->attachmentList = $array;
         return $this;
@@ -521,15 +315,14 @@ class Message
      * @param string $name Name of the attachment.
      * @param string $encoding File encoding
      * @param string $type File extension (MIME) type.
-     * @return $this
      */
-    public function addStringAttachment($data, $name, $encoding = 'base64', $type = 'application/octet-stream')
+    public function addStringAttachment(string $data, string $name, string $encoding = 'base64', string $type = 'application/octet-stream'): static
     {
         $obj = new \stdClass();
         $obj->name = $name;
         $obj->encoding = $encoding;
         if ($type == 'application/octet-stream') {      // Try to locate the correct mime if not found
-            $mime = \Tk\File::getMimeType($name);
+            $mime = FileUtil::getMimeType($name);
             if ($mime) $type = $mime;
         }
         $obj->type = $type;
@@ -541,10 +334,8 @@ class Message
 
     /**
      * Return a string representation of this message
-     *
-     * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         $str = '';
         $str .= "\nisHtml: " . ($this->isHtml() ? 'Yes' : 'No') . " \n";
@@ -562,8 +353,5 @@ class Message
         $str .= "body:  \n  " . str_replace($this->getBody(), "\n", "\n  ") . "\n\n";
         return $str;
     }
-
-
-
 
 }

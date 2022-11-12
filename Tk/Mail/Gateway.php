@@ -2,66 +2,35 @@
 namespace Tk\Mail;
 
 use \PHPMailer\PHPMailer\PHPMailer;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\HttpFoundation\Request;
+use Tk\Uri;
 
 /**
- * @author Michael Mifsud <info@tropotek.com>
- * @see http://www.tropotek.com/
- * @license Copyright 2016 Michael Mifsud
+ * @author Tropotek <info@tropotek.com>
  */
 class Gateway
 {
 
-    /**
-     * @var array
-     */
-    protected $params = array();
+    protected array $params = [];
 
-    /**
-     * @var array
-     */
-    protected $validReferers = array();
+    protected array $validReferers = [];
 
-    /**
-     * @var PHPMailer
-     */
-    protected $mailer = null;
+    protected PHPMailer $mailer;
 
-    /**
-     * The status of the last sent message
-     * @var bool
-     */
-    protected $lastSent = null;
+    protected array $error = [];
 
-    /**
-     * @var array
-     */
-    protected $error = array();
+    protected Message $lastMessage;
 
-    /**
-     * The status of the last sent message
-     * @var Message
-     */
-    protected $lastMessage = null;
+    protected bool $lastSent = true;
 
-    /**
-     * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-     */
-    protected $dispatcher = null;
+    protected ?EventDispatcher $dispatcher = null;
 
-    /**
-     * @var string
-     */
-    protected $host = 'localhost';
+    protected string $host = 'localhost';
 
 
-    /**
-     * Gateway constructor.
-     *
-     * @param array $params
-     */
-    public function __construct($params = array())
+    public function __construct(array $params)
     {
-        // NOTICE: this could be the \Tk\Config object...
         $this->params = $params;
         $this->mailer = new PHPMailer();
 
@@ -87,28 +56,19 @@ class Gateway
             }
         }
 
-        if (isset($this->params['mail.validReferers'])) {
-            $refs = $this->params['mail.validReferers'];
-            if (!is_array($refs)) {
-                $refs = explode(',',  $refs);
-            }
-            $this->validReferers = array_merge($this->validReferers, $refs);
-        }
         if (isset($_SERVER['HTTP_HOST'])) {
             $this->host = $_SERVER['HTTP_HOST'];
-            $this->validReferers[] = array_merge($this->validReferers, array($this->host));
+            $this->validReferers[] = $this->host;
         }
+        if (!is_array($this->params['mail.validReferers'])) {
+            $this->params['mail.validReferers'] = explode(',',  $this->params['mail.validReferers']);
+        }
+        $this->validReferers += $this->params['mail.validReferers'];
     }
 
-    /**
-     *
-     * @param Message $message
-     * @return bool
-     * @throws \Exception
-     */
-    public function send(Message $message)
+    public function send(Message $message): bool
     {
-        $this->error = array();
+        $this->error = [];
         try {
             if (!count($message->getTo())) {
                 throw new Exception('No valid recipients found!');
@@ -119,10 +79,8 @@ class Gateway
             $this->checkReferer($this->validReferers);
 
             $event = new MailEvent($this, $message);
-            // Dispatch Pre Send Event
-            if ($this->dispatcher) {
-                $this->dispatcher->dispatch(MailEvents::PRE_SEND, $event);
-            }
+
+            $this->dispatcher?->dispatch($event, MailEvents::PRE_SEND);
 
             if ($message->isHtml()) {
                 $this->mailer->msgHTML($message->getParsed());
@@ -140,14 +98,10 @@ class Gateway
                 $this->mailer->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
             }
 
+            $message->addHeader('X-Application', 'tk-mail');
+            $message->addHeader('X-Application-Name', 'tk-mail');
+            $message->addHeader('X-Application-Version', '8.0.0');
 
-            $message->addHeader('X-Application', 'www.tropotek.com');
-            $message->addHeader('X-Application-Name', 'www.tropotek.com');
-            $message->addHeader('X-Application-Version', '0.0.1');
-
-            if (isset($this->params['system.info.project'])) {
-                $message->addHeader('X-Application', $this->params['system.info.project']);
-            }
             if (!empty($this->params['site.title'])) {
                 $message->addHeader('X-Application-Name', $this->params['site.title']);
             }
@@ -155,24 +109,15 @@ class Gateway
                 $message->addHeader('X-Application-Version', $this->params['system.info.version']);
             }
 
-            /** @var \Tk\Request $request */
-            $request = null;
-            if (!empty($this->params['request']) && $this->params['request'] instanceof \Tk\Request)
-                $request = $this->params['request'];
-
-            if ($request) {
-                if ($request->getClientIp())
-                    $message->addHeader('X-Sender-IP', $request->getClientIp());
-                if ($request->getTkUri()->getHost())
-                    $message->addHeader('X-Host', $request->getTkUri()->getHost());
-                if ($request->getReferer())
-                    $message->addHeader('X-Referer', $request->getReferer()->getRelativePath());
-            }
+            $message->addHeader('X-Sender-IP', $this->params['clientIp'] ?? '');
+            $message->addHeader('X-Host', $this->params['hostname'] ?? '');
+            $message->addHeader('X-Referer', Uri::create($this->params['referer'] ?? '')->getRelativePath());
 
             $this->mailer->Subject = $message->getSubject();
 
             if (isset($this->params['debug']) && $this->params['debug']) {  // Send dev emails and headers of live emails if testing or debug
 
+                //$this->mailer->SMTPDebug = 2;
                 $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
                 $message->addHeader('X-Debug-From', $message->getFrom());
 
@@ -190,7 +135,6 @@ class Gateway
                             }
                         }
                     } else {
-                        $testEmail = $this->params['system.debug.email'];
                         $this->mailer->addAddress($testEmail, 'Debug To');
                     }
                 }
@@ -229,21 +173,15 @@ class Gateway
             // Send Email
             $this->lastMessage = $message;
 
-            if (\Tk\Config::getInstance()->isDebug())
-                $this->mailer->SMTPDebug = 2;
-
             $this->lastSent = $this->mailer->send();
-            if (!$this->lastSent)
-                throw new \Tk\Mail\Exception($this->mailer->ErrorInfo);
-
-            // Dispatch Post Send Event
-            if ($this->dispatcher) {
-                $this->dispatcher->dispatch(MailEvents::POST_SEND, $event);
+            if (!$this->lastSent) {
+                throw new Exception($this->mailer->ErrorInfo);
             }
 
+            // Dispatch Post Send Event
+            $this->dispatcher?->dispatch($event, MailEvents::POST_SEND);
+
         } catch (\Exception $e) {
-            // TODO: Discuss if this is the best way or should we catch exceptions externally, that may be a better option...???????s
-            $this->lastSent = false;
             $this->error[] = $e->getMessage();
             throw $e;
         }
@@ -255,91 +193,50 @@ class Gateway
         return $this->lastSent;
     }
 
-    /**
-     * @return array
-     */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->error;
     }
 
     /**
      * Get the last sent message status
-     *
-     * @return bool
      */
-    public function getLastSent()
+    public function getLastSent(): bool
     {
         return $this->lastSent;
     }
 
-    /**
-     * Return the last message that was sent
-     *
-     * @return Message
-     */
-    public function getLastMessage()
+    public function getLastMessage(): Message
     {
         return $this->lastMessage;
     }
 
-    /**
-     * @return \Symfony\Component\EventDispatcher\EventDispatcherInterface
-     */
-    public function getDispatcher()
+    public function getDispatcher(): EventDispatcher
     {
         return $this->dispatcher;
     }
 
-    /**
-     * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher($dispatcher)
+    public function setDispatcher(EventDispatcher $dispatcher): static
     {
         $this->dispatcher = $dispatcher;
+        return $this;
     }
 
-    /**
-     * @return PHPMailer
-     */
-    public function getMailer()
+    public function getMailer(): PHPMailer
     {
         return $this->mailer;
     }
-
-    /**
-     * See if a string contains any suspicious/injection coding.
-     *
-     * @param string $str
-     * @throws \Tk\Mail\Exception
-     */
-//    private function validateString($str)
-//    {
-//        if (!$str) { return; }
-//        $badStrings = array("content-type:", "mime-version:", "multipart\/mixed", "content-transfer-encoding:", "bcc:", "cc:", "to:");
-//        foreach ($badStrings as $badString) {
-//            if (preg_match('/'.$badString.'/i', strtolower($str))) {
-//                throw new Exception("'$badString' found. Suspected injection attempt - mail not being sent.");
-//            }
-//        }
-//        if (preg_match("/(%0A|%0D|\\n+|\\r+)/i", $str) != 0) {
-//            throw new Exception("newline found in '$str'. Suspected injection attempt - mail not being sent.");
-//        }
-//    }
 
     /**
      * check_referer() breaks up the environmental variable
      * HTTP_REFERER by "/" and then checks to see if the second
      * member of the array (from the explode) matches any of the
      * domains listed in the $referers array (declared at top)
-     *
-     * @param array $referers
-     * @throws \Tk\Mail\Exception
      */
-    private function checkReferer($referers)
+    private function checkReferer(array $referers): void
     {
         // do not check referrer for CLI apps
-        if (substr(php_sapi_name(), 0, 3) == 'cli') {
+        if (str_starts_with(php_sapi_name(), 'cli')) {
             return;
         }
         if (!isset($this->params['mail.checkReferer']) || !$this->params['mail.checkReferer']) {
@@ -356,10 +253,6 @@ class Gateway
                         break;
                     }
                 }
-//                while (list(, $stored_referer) = each($referers)) {
-//                    if (preg_match('/^' . $stored_referer . '$/i', $temp[2]))
-//                        $found = true;
-//                }
                 if (!$found) {
                     throw new Exception("You are coming from an unauthorized domain. Illegal Referer.");
                 }
@@ -367,7 +260,8 @@ class Gateway
                 throw new Exception("Sorry, but I cannot figure out who sent you here. Your browser is not sending an HTTP_REFERER. This could be caused by a firewall or browser that removes the HTTP_REFERER from each HTTP request you submit.");
             }
         } else {
-            throw new Exception("There is no referer defined. All submissions will be denied.");        }
+            throw new Exception("There is no referer defined. All submissions will be denied.");
+        }
     }
 
 }

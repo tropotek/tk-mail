@@ -1,41 +1,28 @@
 <?php
 namespace Tk\Mail;
 
-use Tk\Callback;
+
+use Tk\CallbackCollection;
+use Tk\CollectionTrait;
+use Tk\CurlyTemplate;
+use Tk\Date;
 
 /**
  * This message accepts text templates and replaces {param} with the
  * corresponding value.
- *
- *
- *
  */
 class CurlyMessage extends Message
 {
-    
-    use \Tk\CollectionTrait;
+    use CollectionTrait;
 
-    /**
-     * @var Callback
-     */
-    protected $onParse = null;
+    protected CallbackCollection $onParse;
 
-    /**
-     * @var \Tk\CurlyTemplate
-     */
-    protected $template = null;
+    protected ?CurlyTemplate $template = null;
 
 
-    /**
-     * MessageTemplate constructor.
-     * 
-     * @param string $body
-     * @param string $subject
-     * @param string $to
-     * @param string $from
-     */
-    public function __construct($body = '{content}', $subject = '', $to = '', $from = '')
+    public function __construct(string $body = '{content}', string $subject = '', string $to = '', string $from = '')
     {
+        $this->onParse = new CallbackCollection();
         parent::__construct($body, $subject, $to, $from);
         $this->set('content', '');
     }
@@ -44,33 +31,25 @@ class CurlyMessage extends Message
      * Set the content. this should be the contents of the email
      * not to be confused with the message template.
      * It can contain curly template vars also.
-     *
-     * @param string $tpl
      */
-    public function setContent($tpl)
+    public function setContent(string $tpl)
     {
         $this->set('content', $tpl);
     }
 
     /**
      * The message text body
-     *
-     * @param string $body
-     * @return $this
      */
-    public function setBody($body)
+    public function setBody(string $body): static
     {
         $this->body = $body;
         $this->template = null;
         if ($body)
-            $this->template = \Tk\CurlyTemplate::create($body);
+            $this->template = CurlyTemplate::create($body);
         return $this;
     }
 
-    /**
-     * @return Callback
-     */
-    public function getOnParse()
+    public function getOnParse(): CallbackCollection
     {
         return $this->onParse;
     }
@@ -78,49 +57,26 @@ class CurlyMessage extends Message
     /**
      * Set a callback function to fire when the getParsed() method is called
      * EG: function ($curlyMessage) { }
-     *
-     * @param callable $callable
-     * @param int $priority
-     * @return $this
      */
-    public function addOnParse($callable, $priority=Callback::DEFAULT_PRIORITY)
+    public function addOnParse(callable $callable, int $priority = CallbackCollection::DEFAULT_PRIORITY): static
     {
         $this->getOnParse()->append($callable, $priority);
         return $this;
     }
 
     /**
-     * Set a callback function to fire when the getParsed() method is called
-     *
-     * @param callable $onParse
-     * @return $this
-     * @deprecated Use addOnParse($callable, $priority);
-     */
-    public function setOnParse($onParse)
-    {
-        $this->addOnParse($onParse);
-        return $this;
-    }
-
-    /**
      * Gets the tCurlyTemplate object
-     *
      * This will return null until the setBody($body) function is called with data
-     *
-     * @return \Tk\CurlyTemplate
      */
-    public function getTemplate()
+    public function getTemplate(): ?CurlyTemplate
     {
         return $this->template;
     }
 
     /**
-     * Returns the a parsed message body ready for sending.
-     *
-     * @return string
-     * @throws \Tk\Exception
+     * Returns the parsed message body ready for sending.
      */
-    public function getParsed()
+    public function getParsed(): string
     {
         if (!$this->template) return '';
 
@@ -130,31 +86,28 @@ class CurlyMessage extends Message
         $this->set('toEmailList', self::listToStr($this->getTo()));
         $this->set('ccEmailList', self::listToStr($this->getCc()));
         $this->set('bccEmailList', self::listToStr($this->getBcc()));
-        $this->set('date', \Tk\Date::create()->format(\Tk\Date::FORMAT_LONG_DATETIME));
+        $this->set('date', Date::create()->format(Date::FORMAT_LONG_DATETIME));
 
-        if (is_callable($this->onParse)) {
-            call_user_func_array($this->onParse, array($this));
-        }
+        $this->getOnParse()?->execute($this);
 
-        $str = $this->template->parse($this->getCollection()->all());
-
-        return $str;
+        return $this->template->parse($this->getCollection()->all());
     }
 
 
     /**
-     * @return array
+     * Return an array of curly template params and descriptions
      */
-    public static function getParamList()
+    public static function getParamList(): array
     {
-        return array(
-            'subject',
-            'fromEmail',
-            'toEmail',
-            'toEmailList',
-            'ccEmailList',
-            'bccEmailList'
-        );
+        return [
+            'subject' => '{string}',
+            'fromEmail' => 'from@example.com',
+            'toEmail' => 'email1@example.com, email2@example.com, ..',
+            'toEmailList' => 'email1@example.com, email2@example.com, ..',
+            'ccEmailList' => 'email1@example.com, email2@example.com, ..',
+            'bccEmailList' => 'email1@example.com, email2@example.com, ..',
+            'date' => 'Tuesday, 01 Jan 2009 12:59 PM',
+        ];
     }
 
 }

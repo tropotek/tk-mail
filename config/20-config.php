@@ -49,17 +49,12 @@ return function (Config $config)
      * Other misc options
      */
 
-    // \Tk\Request Used to set the X-Sender-IP, X-Referer headers
-    //$config->set('mail.request', '');
-    // \Tk\Session Used to set the X-SiteReferer header
-    //$config->set('mail.session', '');
-
     // Set this if you want all email to go to this address in debug mode
-    $config->set('mail.debug.email', '');
+    //$config->set('mail.debug.email', 'user@example.com');
 
     // If set X-Application will be set to this
-    //$config->set('mail.name', '');
-    //$config->set('mail.version', '');
+    //$config->set('mail.name', 'tk-mail');
+    //$config->set('mail.version', ''1.0.0);
 
     // Change this to suite your message body encoding
     $config->set('mail.encoding', 'UTF-8');

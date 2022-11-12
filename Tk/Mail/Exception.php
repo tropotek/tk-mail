@@ -2,15 +2,9 @@
 namespace Tk\Mail;
 
 /**
- * Class Exception
- *
- * @author Michael Mifsud <info@tropotek.com>
- * @see http://www.tropotek.com/
- * @license Copyright 2015 Michael Mifsud
+ * @author Tropotek <info@tropotek.com>
  */
 class Exception extends \Tk\Exception
 {
-
-
 
 }

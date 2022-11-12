@@ -1,63 +1,33 @@
 <?php
 namespace Tk\Mail;
 
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
- * Class KernelEvent
- *
- * @author Michael Mifsud <info@tropotek.com>
- * @see http://www.tropotek.com/
- * @license Copyright 2016 Michael Mifsud
- * @notes Adapted from Symfony
+ * @author Tropotek <info@tropotek.com>
  */
-class MailEvent extends \Tk\Event\Event
+class MailEvent extends Event
 {
-    /**
-     * @var \Tk\Mail\Gateway
-     */
-    protected $gateway = null;
 
-    /**
-     * @var \Tk\Mail\Message
-     */
-    protected $message = null;
+    protected Gateway $gateway;
+
+    protected Message $message;
 
 
-    /**
-     * MailEvent constructor.
-     *
-     * @param \Tk\Mail\Gateway $gateway
-     * @param \Tk\Mail\Message $message
-     */
-    public function __construct($gateway, $message)
+    public function __construct(Gateway $gateway, Message $message)
     {
         $this->gateway = $gateway;
         $this->message = $message;
     }
 
-    /**
-     * @return Gateway
-     */
-    public function getGateway()
+    public function getGateway(): Gateway
     {
         return $this->gateway;
     }
 
-    /**
-     * @return \PHPMailer\PHPMailer\PHPMailer
-     */
-    public function getMailer()
-    {
-        return $this->getGateway()->getMailer();
-    }
-
-    /**
-     * @return Message
-     */
-    public function getMessage()
+    public function getMessage(): Message
     {
         return $this->message;
     }
 
-    
 }

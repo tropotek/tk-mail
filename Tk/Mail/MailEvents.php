@@ -2,24 +2,16 @@
 namespace Tk\Mail;
 
 /**
- * Class MailEvents
- *
- * @author Michael Mifsud <info@tropotek.com>
- * @see http://www.tropotek.com/
- * @license Copyright 2016 Michael Mifsud
+ * @author Tropotek <info@tropotek.com>
  */
 final class MailEvents
 {
-
-
     /**
      * Called prior to setting up the mail driver to send a message
      *
      * @event \Tk\Mail\MailEvent
      */
     const PRE_SEND = 'mail.onPreSend';
-
-
 
     /**
      * Called after the mail driver has sent the message
