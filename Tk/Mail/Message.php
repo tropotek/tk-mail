@@ -44,6 +44,11 @@ class Message
     /**
      * @var string
      */
+    protected $replyTo = '';
+
+    /**
+     * @var string
+     */
     protected $subject = '{No Subject}';
 
     /**
@@ -72,8 +77,8 @@ class Message
      *
      * @param string $body
      * @param string $subject
-     * @param string $from
      * @param string $to
+     * @param string $from
      */
     public function __construct($body = '', $subject = '', $to = '', $from = '')
     {
@@ -86,6 +91,7 @@ class Message
         if ($to) {
             $this->addTo($to);
         }
+        $this->setFrom($from = 'noreply@' . $_SERVER['HTTP_HOST']);
         if ($from) {
             $this->setFrom($from);
         }
@@ -219,6 +225,28 @@ class Message
     public function getFrom()
     {
         return $this->from;
+    }
+
+    /**
+     * Set reply to email address
+     *
+     * @param string $email
+     * @return $this
+     */
+    public function setReplyTo($email)
+    {
+        $this->replyTo = trim($email);
+        return $this;
+    }
+
+    /**
+     * Return the reply to address
+     *
+     * @return string
+     */
+    public function getReplyTo()
+    {
+        return $this->replyTo;
     }
 
     /**
@@ -548,6 +576,9 @@ class Message
 
         /* email/name arrays */
         $str .= 'from: ' . $this->getFrom() . "\n";
+        if ($this->getReplyTo()) {
+            $str .= 'replyTo: ' . $this->getReplyTo() . "\n";
+        }
         $str .= 'to: ' . self::listToStr($this->getTo()) . "\n";
         if (count($this->cc))
             $str .= 'cc: ' . self::listToStr($this->getCc()) . "\n";

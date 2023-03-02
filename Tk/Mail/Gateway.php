@@ -176,6 +176,9 @@ class Gateway
 
                 $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
                 $message->addHeader('X-Debug-From', $message->getFrom());
+                if ($message->getReplyTo()) {
+                    $message->addHeader('X-Debug-Reply-To', $message->getReplyTo());
+                }
 
                 // Set new debug recipient
                 $testEmail = 'debug@'.$this->host;
@@ -210,10 +213,16 @@ class Gateway
                     $message->addHeader('X-Debug-Bcc', Message::listToStr($message->getBcc()));
                 }
             } else {        // Send live emails
-                $email = $message->getFrom();
-                if (!$email) $email = 'noreply@' . $this->host;
-                list($e, $n) = Message::splitEmail($email);
+
+                $from = 'noreply@' . $this->host;
+                if ($message->getFrom()) $from = $message->getFrom();
+                list($e, $n) = Message::splitEmail($from);
                 $this->mailer->setFrom($e, $n);
+
+                if ($message->getReplyTo()) {
+                    list($e, $n) = Message::splitEmail($message->getReplyTo());
+                    $this->mailer->addReplyTo($e, $n);
+                }
 
                 foreach ($message->getTo() as $email) {
                     list($e, $n) = Message::splitEmail($email);
