@@ -107,7 +107,12 @@ $cfg['mail.validReferers'] = '';
 // Change this to suite your message body encoding
 //$cfg['mail.encoding'] = 'UTF-8';
 
+$cfg['mail.dkim.domain'] = 'example.com';
+$cfg['mail.dkim.private'] = '/path/to/my/private.key';
+//$cfg['mail.dkim.private_string'] = ''; // Use the private key string instead of a file
+//$cfg['mail.dkim.passphrase'] = '';
 
+//$cfg['mail.dkim.selector'] = 'phpmailer';      // Default is phpmailer only set if using something else
 ```
 
 

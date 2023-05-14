@@ -66,4 +66,13 @@ $cfg['mail.validReferers'] = '';
 //$cfg['mail.encoding'] = 'UTF-8';
 
 
+/*
+ * DKIM setup
+ */
+//$cfg['mail.dkim.domain'] = 'example.com';
+//$cfg['mail.dkim.private'] = '/path/to/my/private.key';
+//$cfg['mail.dkim.private_string'] = ''; // Use the private key string instead of a file
+
+//$cfg['mail.dkim.selector'] = 'phpmailer';      // Default is phpmailer only set if using something else
+//$cfg['mail.dkim.passphrase'] = '';
 

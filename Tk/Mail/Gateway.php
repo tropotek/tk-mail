@@ -59,8 +59,9 @@ class Gateway
      * Gateway constructor.
      *
      * @param array $params
+     * @throws Exception
      */
-    public function __construct($params = array())
+    public function __construct($params = [])
     {
         // NOTICE: this could be the \Tk\Config object...
         $this->params = $params;
@@ -86,6 +87,21 @@ class Gateway
                     $this->mailer->isQmail();
                     break;
             }
+        }
+
+        if (isset($this->params['mail.dkim.domain'])) {
+            if (empty($this->params['mail.dkim.domain'])) {
+                error_log('Invalid DKIM domain value.');
+            }
+            if (empty($this->params['mail.dkim.private']) && empty($this->params['mail.dkim.private_string'])) {
+                error_log('Invalid DKIM private key value.');
+            }
+
+            $this->mailer->DKIM_domain         = $this->params['mail.dkim.domain'] ?? '';
+            $this->mailer->DKIM_private        = $this->params['mail.dkim.private'] ?? '';
+            $this->mailer->DKIM_private_string = $this->params['mail.dkim.private_string'] ?? '';
+            $this->mailer->DKIM_passphrase     = $this->params['mail.dkim.passphrase'] ?? '';
+            $this->mailer->DKIM_selector       = $this->params['mail.dkim.selector'] ?? 'phpmailer';
         }
 
         if (isset($this->params['mail.validReferers'])) {
@@ -140,7 +156,6 @@ class Gateway
             foreach ($message->getAttachmentList() as $obj) {
                 $this->mailer->addStringAttachment($obj->string, $obj->name, $obj->encoding, $obj->type);
             }
-
 
             $message->addHeader('X-Application', 'www.tropotek.com');
             $message->addHeader('X-Application-Name', 'www.tropotek.com');
@@ -236,6 +251,11 @@ class Gateway
                     list($e, $n) = Message::splitEmail($email);
                     $this->mailer->addBCC($e, $n);
                 }
+            }
+
+            // Set dkim identity
+            if (isset($this->params['mail.dkim'])) {
+                $this->mailer->DKIM_identity = $this->mailer->From;
             }
 
             foreach ($message->getHeadersList() as $h => $v) {
