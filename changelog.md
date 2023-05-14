@@ -1,5 +1,10 @@
 #CHANGELOG#
 
+Ver 3.2.8 [2023-05-14]:
+-------------------------------
+  - Added DKIM signing to institution settings
+
+
 Ver 3.2.6 [2023-03-02]:
 -------------------------------
   - Use replyTo instead of from for emails
