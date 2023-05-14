@@ -39,13 +39,13 @@ class Gateway
             switch ($this->params['mail.driver']) {
                 case 'smtp':
                     $this->mailer->isSMTP();
-                    $this->mailer->SMTPAuth = $this->params['mail.smtp.enableAuth'];
+                    $this->mailer->SMTPAuth      = $this->params['mail.smtp.enableAuth'];
                     $this->mailer->SMTPKeepAlive = $this->params['mail.smtp.enableKeepAlive'];
-                    $this->mailer->SMTPSecure = $this->params['mail.smtp.secure'];
-                    $this->mailer->Host = $this->params['mail.smtp.host'];
-                    $this->mailer->Port = $this->params['mail.smtp.port'];
-                    $this->mailer->Username = $this->params['mail.smtp.username'];
-                    $this->mailer->Password = $this->params['mail.smtp.password'];
+                    $this->mailer->SMTPSecure    = $this->params['mail.smtp.secure'];
+                    $this->mailer->Host          = $this->params['mail.smtp.host'];
+                    $this->mailer->Port          = $this->params['mail.smtp.port'];
+                    $this->mailer->Username      = $this->params['mail.smtp.username'];
+                    $this->mailer->Password      = $this->params['mail.smtp.password'];
                     break;
                 case 'sendmail':
                     $this->mailer->isSendmail();
@@ -54,6 +54,21 @@ class Gateway
                     $this->mailer->isQmail();
                     break;
             }
+        }
+
+        if (isset($this->params['mail.dkim'])) {
+            if (empty($this->params['mail.dkim.domain'])) {
+                throw new Exception('Invalid DKIM domain value.');
+            }
+            if (empty($this->params['mail.dkim.private']) && empty($this->params['mail.dkim.private_string'])) {
+                throw new Exception('Invalid DKIM private key value.');
+            }
+
+            $this->mailer->DKIM_domain         = $this->params['mail.dkim.domain'] ?? '';
+            $this->mailer->DKIM_private        = $this->params['mail.dkim.private'] ?? '';
+            $this->mailer->DKIM_private_string = $this->params['mail.dkim.private_string'] ?? '';
+            $this->mailer->DKIM_passphrase     = $this->params['mail.dkim.passphrase'] ?? '';
+            $this->mailer->DKIM_selector       = $this->params['mail.dkim.selector'] ?? 'phpmailer';
         }
 
         if (isset($_SERVER['HTTP_HOST'])) {
@@ -168,6 +183,11 @@ class Gateway
 
             foreach ($message->getHeadersList() as $h => $v) {
                 $this->mailer->addCustomHeader($h, $v);
+            }
+
+            // Set dkim identity
+            if (isset($this->params['mail.dkim'])) {
+                $this->mailer->DKIM_identity = $this->mailer->From;
             }
 
             // Send Email

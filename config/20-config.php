@@ -59,6 +59,13 @@ return function (Config $config)
     // Change this to suite your message body encoding
     $config->set('mail.encoding', 'UTF-8');
 
+
+    // DKIM SETUP
+
+    //$config->set('mail.dkim.domain', 'example.com');
+    //$config->set('mail.dkim.private', '/path/to/my/private.key');
+    //$config->set('mail.dkim.private_string', '');             // Use the private key string instead of a file
+
 };
 
 
