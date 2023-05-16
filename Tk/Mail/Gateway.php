@@ -101,7 +101,8 @@ class Gateway
             $this->mailer->DKIM_private        = $this->params['mail.dkim.private'] ?? '';
             $this->mailer->DKIM_private_string = $this->params['mail.dkim.private_string'] ?? '';
             $this->mailer->DKIM_passphrase     = $this->params['mail.dkim.passphrase'] ?? '';
-            $this->mailer->DKIM_selector       = $this->params['mail.dkim.selector'] ?? 'phpmailer';
+            //$this->mailer->DKIM_selector       = $this->params['mail.dkim.selector'] ?? 'phpmailer';
+            $this->mailer->DKIM_selector       = $this->params['mail.dkim.selector'] ?? 'default';
         }
 
         if (isset($this->params['mail.validReferers'])) {
