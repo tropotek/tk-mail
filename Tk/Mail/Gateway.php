@@ -238,6 +238,7 @@ class Gateway
                 if ($message->getReplyTo()) {
                     list($e, $n) = Message::splitEmail($message->getReplyTo());
                     $this->mailer->addReplyTo($e, $n);
+                    $this->mailer->setReturnPath($e, $n);
                 }
 
                 foreach ($message->getTo() as $email) {
