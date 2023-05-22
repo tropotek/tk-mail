@@ -75,10 +75,13 @@ class Gateway
             $this->host = $_SERVER['HTTP_HOST'];
             $this->validReferers[] = $this->host;
         }
-        if (!is_array($this->params['mail.validReferers'] ?? '')) {
-            $this->params['mail.validReferers'] = explode(',',  $this->params['mail.validReferers']);
+
+        if (!empty($this->params['mail.validReferers'])) {
+            if (!is_array($this->params['mail.validReferers'])) {
+                $this->params['mail.validReferers'] = explode(',', $this->params['mail.validReferers']);
+            }
+            $this->validReferers += $this->params['mail.validReferers'];
         }
-        $this->validReferers += $this->params['mail.validReferers'];
     }
 
     public function send(Message $message): bool
