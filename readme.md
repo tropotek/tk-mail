@@ -24,7 +24,7 @@ composer require ttek/tk-mail
 Or add the following to your composer.json file:
 
 ```json
-"ttek/tk-mail": "~3.0"
+"ttek/tk-mail": "~8.0"
 ```
 
 
