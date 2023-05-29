@@ -1,12 +1,8 @@
 <?php
 namespace Tk\Mail;
 
-
 use Tk\FileUtil;
 
-/**
- * @author Tropotek <info@tropotek.com>
- */
 class Message
 {
 
@@ -27,6 +23,8 @@ class Message
     protected array $bcc = [];
 
     protected string $from = '';
+
+    protected string $replyTo = '';
 
     protected string $subject = '{No Subject}';
 
@@ -112,6 +110,17 @@ class Message
     public function getFrom(): string
     {
         return $this->from;
+    }
+
+    public function setReplyTo(string $email): static
+    {
+        $this->replyTo = trim($email);
+        return $this;
+    }
+
+    public function getReplyTo(): string
+    {
+        return $this->replyTo;
     }
 
     public function addTo(string $email): static
@@ -337,12 +346,14 @@ class Message
      */
     public function toString(): string
     {
-        $str = '';
-        $str .= "\nisHtml: " . ($this->isHtml() ? 'Yes' : 'No') . " \n";
+        $str = "\nisHtml: " . ($this->isHtml() ? 'Yes' : 'No') . " \n";
         $str .= 'Attachments: ' . count($this->attachmentList) . "\n";
 
         /* email/name arrays */
         $str .= 'from: ' . $this->getFrom() . "\n";
+        if ($this->getReplyTo()) {
+            $str .= 'replyTo: ' . $this->getReplyTo() . "\n";
+        }
         $str .= 'to: ' . self::listToStr($this->getTo()) . "\n";
         if (count($this->cc))
             $str .= 'cc: ' . self::listToStr($this->getCc()) . "\n";

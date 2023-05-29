@@ -22,7 +22,6 @@ class CurlyMessage extends Message
 
     public function __construct(string $body = '{content}', string $subject = '', string $to = '', string $from = '')
     {
-        $this->_CollectionTrait();
         parent::__construct($body, $subject, $to, $from);
         $this->onParse = new CallbackCollection();
         $this->set('content', '');

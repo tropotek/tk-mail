@@ -56,7 +56,7 @@ class Gateway
             }
         }
 
-        if (isset($this->params['mail.dkim'])) {
+        if (isset($this->params['mail.dkim.domain'])) {
             if (empty($this->params['mail.dkim.domain'])) {
                 throw new Exception('Invalid DKIM domain value.');
             }
@@ -68,7 +68,7 @@ class Gateway
             $this->mailer->DKIM_private        = $this->params['mail.dkim.private'] ?? '';
             $this->mailer->DKIM_private_string = $this->params['mail.dkim.private_string'] ?? '';
             $this->mailer->DKIM_passphrase     = $this->params['mail.dkim.passphrase'] ?? '';
-            $this->mailer->DKIM_selector       = $this->params['mail.dkim.selector'] ?? 'phpmailer';
+            $this->mailer->DKIM_selector       = $this->params['mail.dkim.selector'] ?? 'default';
         }
 
         if (isset($_SERVER['HTTP_HOST'])) {
@@ -138,6 +138,9 @@ class Gateway
                 //$this->mailer->SMTPDebug = 2;
                 $message->addHeader('X-Debug-To', Message::listToStr($message->getTo()));
                 $message->addHeader('X-Debug-From', $message->getFrom());
+                if ($message->getReplyTo()) {
+                    $message->addHeader('X-Debug-Reply-To', $message->getReplyTo());
+                }
 
                 // Set new debug recipient
                 $testEmail = 'debug@'.$this->host;
@@ -169,6 +172,11 @@ class Gateway
                 if (!$email) $email = 'noreply@' . $this->host;
                 list($e, $n) = Message::splitEmail($email);
                 $this->mailer->setFrom($e, $n);
+
+                if ($message->getReplyTo()) {
+                    list($e, $n) = Message::splitEmail($message->getReplyTo());
+                    $this->mailer->addReplyTo($e, $n);
+                }
 
                 foreach ($message->getTo() as $email) {
                     list($e, $n) = Message::splitEmail($email);
