@@ -210,7 +210,6 @@ class Gateway
                             }
                         }
                     } else {
-                        $testEmail = $this->params['system.debug.email'];
                         $this->mailer->addAddress($testEmail, 'Debug To');
                     }
                 }
@@ -266,7 +265,7 @@ class Gateway
             // Send Email
             $this->lastMessage = $message;
 
-            // Note: can interfear with output buffer contents in AJAX calls, so enable when needed only
+            // Note: can interfear with output buffer contents in AJAX calls, so only enable when testing
 //            if (\Tk\Config::getInstance()->isDebug())
 //                $this->mailer->SMTPDebug = 2;
 
