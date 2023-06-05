@@ -1,5 +1,10 @@
 #CHANGELOG#
 
+Ver 3.2.18 [2023-06-05]:
+-------------------------------
+  - Only send disposal reminders to necropsy cases
+
+
 Ver 3.2.16 [2023-06-03]:
 -------------------------------
   - Added option to ue text client name
