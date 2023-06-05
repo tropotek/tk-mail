@@ -91,7 +91,7 @@ class Message
         if ($to) {
             $this->addTo($to);
         }
-        $this->setFrom($from = 'noreply@' . $_SERVER['HTTP_HOST']);
+        $this->setFrom($from = 'noreply@email.com');
         if ($from) {
             $this->setFrom($from);
         }
