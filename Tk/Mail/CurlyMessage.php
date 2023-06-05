@@ -144,6 +144,7 @@ class CurlyMessage extends Message
         $this->set('date', \Tk\Date::create()->format(\Tk\Date::FORMAT_LONG_DATETIME));
 
         if (is_callable($this->onParse)) {
+            vd('----');
             call_user_func_array($this->onParse, array($this));
         }
 
