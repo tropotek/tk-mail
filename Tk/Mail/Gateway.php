@@ -158,6 +158,8 @@ class Gateway
                     } else {
                         $this->mailer->addAddress($testEmail, 'Debug To');
                     }
+                } else {
+                    throw new Exception('No debug email found. Add $config[\'system.debug.email\'] = \'\email@...\' to your config.');
                 }
                 $this->mailer->setFrom($testEmail, 'Debug From');
 
