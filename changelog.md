@@ -1,5 +1,13 @@
 #CHANGELOG#
 
+Ver 8.0.0 [2023-06-27]:
+-------------------------------
+  - implemented account recover and registration
+  - Added account recover page
+  - Update mail gateway to accept DKIM settings
+  - Tagging and releasing branch `master` with version `3.0.16`.
+
+
 Ver 3.0.16 [2020-11-23]:
 -------------------------------
 
