@@ -1,5 +1,29 @@
 #CHANGELOG#
 
+Ver 3.2.20 [2023-11-18]:
+-------------------------------
+  - Tagging and releasing branch `3.2` with version `3.2.18`.
+  - Only send disposal reminders to necropsy cases
+  - Tagging and releasing branch `3.2` with version `3.2.16`.
+  - Added option to ue text client name
+  - Tagging and releasing branch `3.2` with version `3.2.14`.
+  - Tagging and releasing branch `3.2` with version `3.2.12`.
+  - Tagging and releasing branch `3.2` with version `3.2.10`.
+  - Tagging and releasing branch `3.2` with version `3.2.8`.
+  - Added DKIM signing to institution settings
+  - Tagging and releasing branch `3.2` with version `3.2.6`.
+  - Use replyTo instead of from for emails
+  - Tagging and releasing branch `3.2` with version `3.2.4`.
+  - Tagging and releasing branch `3.2` with version `3.2.2`.
+  - Tagging and releasing branch `3.2` with version `3.2.0`.
+  - Tagging and releasing branch `3.0` with version `3.0.26`.
+  - Tagging and releasing branch `3.0` with version `3.0.24`.
+  - Tagging and releasing branch `3.0` with version `3.0.22`.
+  - Tagging and releasing branch `3.0` with version `3.0.20`.
+  - Tagging and releasing branch `3.0` with version `3.0.18`.
+  - Tagging and releasing branch `3.0` with version `3.0.14`.
+
+
 Ver 3.2.18 [2023-06-05]:
 -------------------------------
   - Only send disposal reminders to necropsy cases
