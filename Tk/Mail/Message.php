@@ -444,22 +444,22 @@ class Message
     /**
      * split an email address from its parts to an array
      * EG:
-     *   o "username@domain.com" = array('username@domain.com', 'username')
-     *   o "User Name <username@domain.com>" = array('username@domain.com', 'User Name')
-     *   O All unknowns return array('', 'original string value...')
+     *   o "username@domain.com" = ['username@domain.com', 'username']
+     *   o "User Name <username@domain.com>" = ['username@domain.com', 'User Name']
+     *   O Unknowns/invalid emails = ['<original_email>', '']
      *
      * @param string $email
      * @return array Containing (email, name)
      */
     public static function splitEmail($email)
     {
-        $email = trim($email);
         if (preg_match('/(.+) <(\S+)>/', $email, $regs)) {
-            return array(strtolower($regs[2]), $regs[1]);
+            return array(trim(strtolower($regs[2])), $regs[1]);
         } else if (preg_match('/((\S+)@(\S+))/', $email, $regs)) {
-            return array(strtolower($email), $regs[2]);
+            return array(trim(strtolower($email)), $regs[2]);
         }
-        return array('', $email);
+        // Should not get here for valid emails
+        return array(trim($email), '');
     }
 
     /**
